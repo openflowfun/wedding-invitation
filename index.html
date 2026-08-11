@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Krishal &amp; Jayakshi — 17th December 2026</title>
+<link rel="icon" type="image/svg+xml" href="images/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Beau+Rivage&family=Cinzel:wght@500;600&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- Opening veil. Stays invisible unless JS arms it, so the page is never
+     locked behind a curtain that can't be lifted. -->
+<div class="intro-veil" id="introVeil">
+  <div class="intro-inner">
+    <div class="intro-monogram">K &amp; J</div>
+    <div class="intro-names">Krishal &amp; Jayakshi</div>
+    <div class="intro-date">are getting married</div>
+    <button class="intro-open" id="introOpen">Open Invitation</button>
+    <div class="intro-hint" id="introHint">Best enjoyed with sound</div>
+  </div>
+</div>
+
+<audio id="bgMusic" loop preload="none" src="audio/music.mp3"></audio>
+
+<button class="music-toggle muted" id="musicToggle" aria-label="Toggle music" aria-pressed="false">
+  <span class="ring" aria-hidden="true"></span>
+  <span class="ring" aria-hidden="true"></span>
+  <svg class="icon-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3z"/></svg>
+  <svg class="icon-mute" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3zM3.3 2.3 21.7 20.7l-1.4 1.4L1.9 3.7z"/></svg>
+</button>
+
+<div class="scroll-progress" id="scrollProgress"></div>
+
+<div class="petal-field" aria-hidden="true">
+  <span class="petal c1" style="left:6%;  --drift:30px; width:12px; height:12px; animation-duration:14s; animation-delay:0s;"></span>
+  <span class="petal c2" style="left:16%; --drift:-22px; width:9px;  height:9px;  animation-duration:11s; animation-delay:2.5s;"></span>
+  <span class="petal c3" style="left:28%; --drift:18px; width:16px; height:16px; animation-duration:17s; animation-delay:1s;"></span>
+  <span class="petal c1" style="left:41%; --drift:-28px; width:11px; height:11px; animation-duration:13s; animation-delay:4s;"></span>
+  <span class="petal c2" style="left:54%; --drift:24px; width:14px; height:14px; animation-duration:16s; animation-delay:0.5s;"></span>
+  <span class="petal c3" style="left:66%; --drift:-16px; width:10px; height:10px; animation-duration:12s; animation-delay:3.5s;"></span>
+  <span class="petal c1" style="left:78%; --drift:26px; width:15px; height:15px; animation-duration:18s; animation-delay:1.8s;"></span>
+  <span class="petal c2" style="left:88%; --drift:-20px; width:12px; height:12px; animation-duration:14.5s; animation-delay:5s;"></span>
+  <span class="petal c3" style="left:95%; --drift:20px; width:9px;  height:9px;  animation-duration:11.5s; animation-delay:2.2s;"></span>
+  <span class="petal c1" style="left:35%; --drift:14px; width:8px;  height:8px;  animation-duration:10.5s; animation-delay:6.2s;"></span>
+</div>
+
+<div class="topbar">
+  <a href="#home" class="monogram">K&nbsp;&amp;&nbsp;J</a>
+  <button class="hamburger" id="hamburgerBtn" aria-label="Open menu">
+    <span></span><span></span><span></span>
+  </button>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<nav class="menu-panel" id="menuPanel">
+  <a href="#home" data-close>Home</a>
+  <a href="#countdown" data-close>Countdown</a>
+  <a href="#details" data-close>Details</a>
+  <a href="#location" data-close>Venue</a>
+  <a href="#gallery" data-close>Gallery</a>
+  <a href="#rsvp" data-close>RSVP</a>
+  <a id="dashboardLink">Dashboard</a>
+</nav>
+
+<section class="hero" id="home">
+  <div class="hero-bg" aria-hidden="true">
+    <img src="images/couple-beach.jpg" alt="">
+  </div>
+  <div class="hero-eyebrow eyebrow">Together with their families</div>
+  <h1>Krishal <span class="amp">&amp;</span> Jayakshi</h1>
+  <div class="hero-sub">are getting married</div>
+  <div class="couple-img-wrap" id="heroImg">
+    <div class="couple-photo">
+      <img src="images/couple-uniform.jpg" alt="Krishal and Jayakshi in service dress">
+    </div>
+  </div>
+  <div class="hero-date">17th December 2026</div>
+  <div class="hero-venue">Hotel Green Court, Homagama</div>
+  <a href="#rsvp" class="cta-btn">RSVP</a>
+  <div class="scroll-cue" aria-hidden="true"><span>Scroll</span><span class="line"></span></div>
+</section>
+
+<section class="countdown" id="countdown">
+  <div class="section-inner">
+    <div class="eyebrow reveal">Counting down</div>
+    <div class="section-title reveal">Until We Say I Do</div>
+    <div class="ribbon-divider reveal"><span></span><span></span><span></span><span></span><span></span></div>
+
+    <div class="countdown-grid reveal reveal-delay-1" id="countdownGrid">
+      <div class="count-cell"><span class="count-num" id="cdDays">—</span><span class="count-lbl">Days</span></div>
+      <div class="count-cell"><span class="count-num" id="cdHours">—</span><span class="count-lbl">Hours</span></div>
+      <div class="count-cell"><span class="count-num" id="cdMins">—</span><span class="count-lbl">Minutes</span></div>
+      <div class="count-cell"><span class="count-num" id="cdSecs">—</span><span class="count-lbl">Seconds</span></div>
+    </div>
+
+    <p class="countdown-note reveal reveal-delay-2" id="countdownNote">Every day brings us closer to celebrating with you.</p>
+    <a class="calendar-btn reveal reveal-delay-3" id="calendarBtn" href="#" target="_blank" rel="noopener">Add to Calendar</a>
+  </div>
+</section>
+
+<section class="details" id="details">
+  <div class="section-inner">
+    <div class="eyebrow reveal">Save the date</div>
+    <div class="section-title reveal">The Details</div>
+    <div class="ribbon-divider reveal"><span></span><span></span><span></span><span></span><span></span></div>
+    <div class="detail-cards">
+      <div class="detail-card reveal">
+        <span class="eyebrow">When</span>
+        <p>Thursday, 17th December 2026</p>
+      </div>
+      <div class="detail-card reveal reveal-delay-1">
+        <span class="eyebrow">Where</span>
+        <p>Hotel Green Court<br>Homagama</p>
+        <a class="venue-link" href="#location">View Map &amp; Directions</a>
+      </div>
+      <div class="detail-card reveal reveal-delay-2">
+        <span class="eyebrow">Gents</span>
+        <p class="dress-note">A blazer would suit you.</p>
+      </div>
+      <div class="detail-card reveal reveal-delay-3">
+        <span class="eyebrow">Ladies</span>
+        <p class="dress-note">You know what's good for you.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="location" id="location">
+  <div class="section-inner">
+    <div class="eyebrow reveal">How to find us</div>
+    <div class="section-title reveal">The Venue</div>
+    <div class="ribbon-divider reveal"><span></span><span></span><span></span><span></span><span></span></div>
+
+    <p class="venue-name reveal reveal-delay-1">Hotel Green Court</p>
+    <p class="venue-town reveal reveal-delay-1">Homagama</p>
+
+    <!--
+      Keyless Google Maps embed — no API key or billing account needed.
+
+      The pin is placed by COORDINATES, not by name, with the label in
+      parentheses. A name search does not reliably render a marker, which
+      would leave guests staring at a map of Homagama with nothing on it.
+      Coordinates always drop a pin exactly where it is told to.
+
+      To move the pin, change the numbers below AND the `destination=` on
+      the Get Directions button so the two never disagree.
+    -->
+    <div class="map-frame reveal reveal-delay-2">
+      <iframe
+        src="https://maps.google.com/maps?q=6.8475291,79.9944897(Hotel+Green+Court)&z=17&output=embed"
+        title="Map showing Hotel Green Court, Homagama"
+        loading="lazy"
+        referrerpolicy="no-referrer-when-downgrade"
+        allowfullscreen></iframe>
+    </div>
+
+    <div class="map-actions reveal reveal-delay-3">
+      <a class="cta-btn" href="https://www.google.com/maps/dir/?api=1&destination=6.8475291,79.9944897" target="_blank" rel="noopener">Get Directions</a>
+      <a class="map-secondary" href="https://www.google.com/maps/search/?api=1&query=Hotel+Green+Court+Homagama" target="_blank" rel="noopener">Open in Google Maps</a>
+    </div>
+  </div>
+</section>
+
+<!-- Cinematic full-bleed band -->
+<section class="band" id="band">
+  <div class="band-media" id="bandMedia">
+    <img src="images/couple-mountains.jpg" alt="Krishal and Jayakshi overlooking the hills" loading="lazy">
+  </div>
+  <div class="band-inner">
+    <div class="band-quote script reveal">Every love story is beautiful,<br>but ours is our favourite.</div>
+    <div class="band-sub reveal reveal-delay-1">Krishal &amp; Jayakshi</div>
+  </div>
+</section>
+
+<section class="gallery" id="gallery">
+  <div class="section-inner wide">
+    <div class="eyebrow reveal">A few moments</div>
+    <div class="section-title reveal">Our Story So Far</div>
+    <div class="ribbon-divider reveal"><span></span><span></span><span></span><span></span><span></span></div>
+
+    <!--
+      Mosaic tiles. Size classes: "big" = 2x2, "tall" = 1x2, "wide" = 2x1,
+      no class = 1x1. The current order tiles perfectly with no gaps on both
+      the 4-column (desktop) and 2-column (mobile) grids — if you add or
+      remove photos, keep the mix balanced so the mosaic stays flush.
+      The alt text doubles as the hover caption and lightbox caption.
+    -->
+    <div class="gallery-grid">
+      <div class="gallery-item big reveal">
+        <img src="images/couple-beach.jpg" alt="Just the two of us, by the sea" loading="lazy">
+        <div class="gallery-caption">Just the two of us, by the sea</div>
+      </div>
+      <div class="gallery-item tall reveal reveal-delay-1">
+        <img src="images/couple-bouquet.jpg" alt="The day we said yes" loading="lazy">
+        <div class="gallery-caption">The day we said yes</div>
+      </div>
+      <div class="gallery-item tall reveal reveal-delay-2">
+        <img src="images/couple-corridor.jpg" alt="Come along with me" loading="lazy">
+        <div class="gallery-caption">Come along with me</div>
+      </div>
+      <div class="gallery-item tall reveal reveal-delay-3">
+        <img src="images/couple-cafe.jpg" alt="Slow afternoons together" loading="lazy">
+        <div class="gallery-caption">Slow afternoons together</div>
+      </div>
+      <div class="gallery-item tall reveal reveal-delay-4">
+        <img src="images/couple-birthday.jpg" alt="Celebrating another year" loading="lazy">
+        <div class="gallery-caption">Celebrating another year</div>
+      </div>
+      <div class="gallery-item wide reveal reveal-delay-5">
+        <img src="images/couple-zoo.jpg" alt="Wandering, as always" loading="lazy">
+        <div class="gallery-caption">Wandering, as always</div>
+      </div>
+      <div class="gallery-item wide reveal reveal-delay-6">
+        <img src="images/couple-hills.jpg" alt="Up in the hills" loading="lazy">
+        <div class="gallery-caption">Up in the hills</div>
+      </div>
+    </div>
+    <p class="gallery-note reveal">And the very best chapter starts this December.</p>
+  </div>
+</section>
+
+<section class="rsvp" id="rsvp">
+  <div class="section-inner">
+    <div class="eyebrow reveal">Kindly respond</div>
+    <div class="section-title reveal">RSVP</div>
+    <div class="ribbon-divider reveal"><span></span><span></span><span></span><span></span><span></span></div>
+
+    <form class="rsvp-form reveal" id="rsvpForm">
+      <div class="field">
+        <label for="guestName">Full Name</label>
+        <input type="text" id="guestName" placeholder="Your name" required>
+      </div>
+
+      <div class="field">
+        <label>Will you be attending?</label>
+        <div class="toggle-group">
+          <button type="button" class="toggle-btn yes-btn" data-val="yes">Joyfully Accepts</button>
+          <button type="button" class="toggle-btn no-btn" data-val="no">Regretfully Declines</button>
+        </div>
+      </div>
+
+      <div class="field guests-field" id="guestsField">
+        <label for="guestCount">Number of Guests (including you)</label>
+        <input type="text" inputmode="numeric" id="guestCount" placeholder="e.g. 2">
+      </div>
+
+      <div class="field">
+        <label for="guestMsg">Message (optional)</label>
+        <textarea id="guestMsg" rows="3" placeholder="A wish for the couple..."></textarea>
+      </div>
+
+      <button type="submit" class="submit-btn" id="submitBtn">Send RSVP</button>
+      <div class="form-msg" id="formMsg"></div>
+    </form>
+
+    <div class="success-panel" id="successPanel">
+      <div class="check">✓</div>
+      <div class="script" id="successTitle">Thank you</div>
+      <p style="margin-top:8px; font-size:1.1rem;" id="successText">Your response has been received. We can't wait to celebrate with you.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="script reveal">Krishal &amp; Jayakshi</div>
+  <p class="reveal reveal-delay-1">17 · 12 · 2026 &nbsp;—&nbsp; Hotel Green Court, Homagama</p>
+</footer>
+
+<!-- Gallery Lightbox -->
+<div class="lightbox" id="lightbox">
+  <button class="lightbox-close" id="lightboxClose" aria-label="Close">✕</button>
+  <button class="lightbox-nav prev" id="lightboxPrev" aria-label="Previous photo">‹</button>
+  <button class="lightbox-nav next" id="lightboxNext" aria-label="Next photo">›</button>
+  <div class="lightbox-inner">
+    <img id="lightboxImg" alt="">
+    <div class="lightbox-caption" id="lightboxCaption"></div>
+    <div class="lightbox-count" id="lightboxCount"></div>
+  </div>
+</div>
+
+<!-- Dashboard Modal -->
+<div class="modal-scrim" id="dashScrim">
+  <div class="modal">
+    <button class="modal-close" id="dashClose" aria-label="Close dashboard">✕</button>
+
+    <div id="passGate" class="passcode-box">
+      <h2>Dashboard</h2>
+      <p style="margin-bottom:16px; opacity:0.7;">Enter the passcode to view responses.</p>
+      <input type="password" id="passInput" placeholder="Passcode" autocomplete="off">
+      <button id="passSubmit">Enter</button>
+      <div class="form-msg error" id="passError"></div>
+    </div>
+
+    <div id="dashContent" style="display:none;">
+      <h2>Responses</h2>
+      <div class="stats-row">
+        <div class="stat"><div class="num" id="statTotal">0</div><div class="lbl">Responses</div></div>
+        <div class="stat"><div class="num" id="statYes">0</div><div class="lbl">Attending</div></div>
+        <div class="stat"><div class="num" id="statNo">0</div><div class="lbl">Not Attending</div></div>
+        <div class="stat"><div class="num" id="statGuests">0</div><div class="lbl">Total Guests</div></div>
+      </div>
+      <div class="dash-toolbar">
+        <button id="refreshBtn">Refresh</button>
+        <button id="csvBtn">Download CSV</button>
+        <span class="dash-filter">
+          <button data-filter="all" class="active">All</button>
+          <button data-filter="yes">Attending</button>
+          <button data-filter="no">Not Attending</button>
+        </span>
+      </div>
+      <div class="dash-table-wrap">
+        <table id="dashTable">
+          <thead>
+            <tr><th>Name</th><th>Status</th><th>Guests</th><th>Message</th><th>Submitted</th></tr>
+          </thead>
+          <tbody id="dashBody"></tbody>
+        </table>
+      </div>
+      <div class="empty-state" id="emptyState" style="display:none;">No responses yet.</div>
+    </div>
+  </div>
+</div>
+
+<script src="js/main.js"></script>
+</body>
+</html>

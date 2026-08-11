@@ -1,0 +1,9 @@
+# macOS
+.DS_Store
+
+# Local tooling config
+.claude/
+
+# Untouched WhatsApp originals — kept on disk for recropping,
+# but no need to publish 2.6 MB of duplicates with the site.
+images/originals/
