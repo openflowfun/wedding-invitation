@@ -2,6 +2,12 @@
 
 A static site: `index.html` + `css/style.css` + `js/main.js`. No build step — open `index.html` directly, or host it anywhere (GitHub Pages, Netlify, Vercel, Cloudflare Pages).
 
+## Publishing changes
+
+After editing `css/style.css` or `js/main.js`, **bump the `?v=` number** on both lines that load them in [index.html](index.html), e.g. `?v=2026100501` → `?v=2026100601`. Then commit and push.
+
+GitHub Pages tells browsers to reuse files for 10 minutes without checking for updates. Without a new `?v=`, anyone who visited recently can get the new page with the *old* stylesheet, and the layout breaks (the envelope's picture shows at full size, for example). A new version number means a new URL, which no browser has cached.
+
 ---
 
 ## ⚠️ One setup step before you share the link
