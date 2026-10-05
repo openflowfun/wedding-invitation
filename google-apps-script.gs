@@ -21,7 +21,10 @@ const SECRET_KEY = 'KJ1712';
 // The tab inside the spreadsheet that rows are written to.
 const SHEET_NAME = 'RSVPs';
 
-const HEADERS = ['Timestamp', 'Name', 'Attending', 'Guests', 'Message'];
+// Phone is the LAST column, not next to Name, on purpose: rows already in the
+// sheet have five columns, and adding the new one at the end keeps every
+// existing row lined up under the right heading.
+const HEADERS = ['Timestamp', 'Name', 'Attending', 'Guests', 'Message', 'Phone'];
 
 
 /** Receives an RSVP from the website and appends it as a row. */
@@ -36,10 +39,11 @@ function doPost(e) {
 
     sheet.appendRow([
       data.timestamp ? new Date(data.timestamp) : new Date(),
-      String(data.name || '').slice(0, 200),
+      safeText_(data.name, 200),
       attending,
       guests,
-      String(data.message || '').slice(0, 1000)
+      safeText_(data.message, 1000),
+      phoneText_(data.phone)
     ]);
 
     return json_({ ok: true });
@@ -73,7 +77,8 @@ function doGet(e) {
           name: String(row[1]),
           attending: String(row[2]).toLowerCase() === 'yes' ? 'yes' : 'no',
           guests: Number(row[3]) || 0,
-          message: String(row[4] || '')
+          message: String(row[4] || ''),
+          phone: String(row[5] || '')
         };
       });
 
@@ -94,10 +99,41 @@ function getSheet_() {
   }
   if (sheet.getLastRow() === 0) {
     sheet.appendRow(HEADERS);
-    sheet.getRange(1, 1, 1, HEADERS.length).setFontWeight('bold');
     sheet.setFrozenRows(1);
+  } else {
+    // An older sheet may predate the Phone column — fill in any missing
+    // headings without touching the rows beneath.
+    const current = sheet.getRange(1, 1, 1, HEADERS.length).getValues()[0];
+    HEADERS.forEach(function (h, i) {
+      if (!current[i]) sheet.getRange(1, i + 1).setValue(h);
+    });
   }
+  sheet.getRange(1, 1, 1, HEADERS.length).setFontWeight('bold');
   return sheet;
+}
+
+
+/**
+ * Text typed by a guest is stored as plain text, never run as a formula.
+ * Google Sheets treats anything starting with = + - or @ as a formula, so a
+ * name like "=IMPORTXML(...)" would otherwise execute when the sheet is
+ * opened. A leading apostrophe makes Sheets keep it as text; the apostrophe
+ * itself is not shown.
+ */
+function safeText_(value, maxLength) {
+  const text = String(value || '').slice(0, maxLength);
+  return /^[=+\-@]/.test(text) ? "'" + text : text;
+}
+
+
+/**
+ * Phone numbers are always forced to text. Otherwise Sheets reads
+ * "0771234567" as the number 771234567 (losing the leading zero) and may
+ * treat "+94 77..." as a formula.
+ */
+function phoneText_(value) {
+  const text = String(value || '').trim().slice(0, 40);
+  return text ? "'" + text : '';
 }
 
 

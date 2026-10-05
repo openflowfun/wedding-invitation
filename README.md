@@ -85,17 +85,22 @@ https://openflowfun.github.io/wedding-invitation/?to=Mr+%26+Mrs+Silva
 
 The letter inside the envelope then reads *"Dear, Nimal Perera"*, and their name is pre-filled in the RSVP form (they can still edit it). Write `&` as `%26`. A plain link with no `?to=` reads *"Dear, Our Beloved Guest"*.
 
-## The day's times
+## The day's time
 
 Set at the top of [js/main.js](js/main.js), pinned to Sri Lanka time (`+05:30`) so guests overseas see the right countdown:
 
 ```js
-const PORUWA_START  = new Date('2026-12-17T09:25:00+05:30'); // the countdown counts to this
-const EVENING_START = new Date('2026-12-17T18:00:00+05:30');
-const DAY_END       = new Date('2026-12-17T23:00:00+05:30'); // assumed — only used to end calendar entries
+const PORUWA_START = new Date('2026-12-17T09:25:00+05:30'); // the countdown counts to this
+const CALENDAR_END = new Date('2026-12-17T15:00:00+05:30'); // assumed — only used to end the calendar entry
 ```
 
-The calendar buttons add one event, **9:25 AM–11:00 PM**, with both ceremonies in its description. The Apple · Outlook button serves [wedding.ics](wedding.ics), which holds that same event. If a time changes, update **both** `main.js` and `wedding.ics`. The times are also written in the page itself: in the Details card, under the calendar, and in the countdown note.
+**Add to Google Calendar** creates one event, the Poruwa Ceremony, 9:25 AM–3:00 PM. The 3:00 PM finish is an assumption, since no end time was given. The 9:25 AM time is also written into the page itself: in the Details card, under the month calendar, and in the countdown note.
+
+## RSVP form
+
+Guests give their name, **mobile number** (required), whether they're attending, how many guests, and an optional message. Any mobile format is accepted — `077 123 4567`, `+94 77 123 4567`, or an overseas number — as long as it has 9–15 digits.
+
+In the Google Sheet each reply is one row: `Timestamp | Name | Attending | Guests | Message | Phone`. Phone is the last column so that rows saved before it existed stay lined up. Numbers are stored as text, so a leading `0` is kept. In the Dashboard, the number is a tap-to-call link.
 
 ## Countdown, music and the opening envelope
 

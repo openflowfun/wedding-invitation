@@ -11,7 +11,7 @@
 <!-- ?v= must change on every deploy. GitHub Pages lets browsers reuse files
      for 10 minutes, so without a new version a returning visitor can get the
      new page with the OLD stylesheet — and a broken layout. -->
-<link rel="stylesheet" href="css/style.css?v=2026100501">
+<link rel="stylesheet" href="css/style.css?v=2026100502">
 </head>
 <body>
 
@@ -147,14 +147,10 @@
 
     <div class="day-times reveal reveal-delay-1">
       <div class="day-time"><span class="dt-time">9:25 AM</span><span class="dt-label">Poruwa Ceremony</span></div>
-      <div class="day-time"><span class="dt-time">6:00 PM</span><span class="dt-label">Evening Ceremony</span></div>
     </div>
 
     <div class="cal-actions reveal reveal-delay-2">
-      <a class="calendar-btn" id="calendarBtn" href="#" target="_blank" rel="noopener">Google Calendar</a>
-      <!-- No `download` attribute on purpose: without it, iPhones open the
-           .ics straight into the Calendar app's "Add" sheet. -->
-      <a class="calendar-btn" href="wedding.ics">Apple · Outlook</a>
+      <a class="calendar-btn" id="calendarBtn" href="#" target="_blank" rel="noopener">Add to Google Calendar</a>
     </div>
   </div>
 </section>
@@ -170,7 +166,6 @@
         <p>Thursday, 17th December 2026</p>
         <ul class="when-times">
           <li><span>9:25 AM</span> Poruwa Ceremony</li>
-          <li><span>6:00 PM</span> Evening Ceremony</li>
         </ul>
       </div>
       <div class="detail-card reveal reveal-delay-1">
@@ -299,7 +294,13 @@
     <form class="rsvp-form reveal" id="rsvpForm">
       <div class="field">
         <label for="guestName">Full Name</label>
-        <input type="text" id="guestName" placeholder="Your name" required>
+        <input type="text" id="guestName" placeholder="Your name" autocomplete="name" required>
+      </div>
+
+      <div class="field">
+        <label for="guestPhone">Mobile Number</label>
+        <input type="tel" id="guestPhone" placeholder="e.g. 077 123 4567" autocomplete="tel" inputmode="tel" required>
+        <p class="field-hint">So we can reach you about the day. Overseas numbers are fine — include the country code.</p>
       </div>
 
       <div class="field">
@@ -386,7 +387,7 @@
       <div class="dash-table-wrap">
         <table id="dashTable">
           <thead>
-            <tr><th>Name</th><th>Status</th><th>Guests</th><th>Message</th><th>Submitted</th></tr>
+            <tr><th>Name</th><th>Mobile</th><th>Status</th><th>Guests</th><th>Message</th><th>Submitted</th></tr>
           </thead>
           <tbody id="dashBody"></tbody>
         </table>
@@ -396,6 +397,6 @@
   </div>
 </div>
 
-<script src="js/main.js?v=2026100501"></script>
+<script src="js/main.js?v=2026100502"></script>
 </body>
 </html>

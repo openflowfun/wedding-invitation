@@ -9,10 +9,9 @@ const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwb2moa8MQ3FN
 // The day, pinned to Sri Lanka time with "+05:30". Without the offset these
 // would be read in each visitor's own timezone, so a relative in London would
 // see a countdown and calendar entry 5½ hours out.
-const PORUWA_START  = new Date('2026-12-17T09:25:00+05:30'); // the countdown counts to this
-const EVENING_START = new Date('2026-12-17T18:00:00+05:30');
-// No finish time was given — this is only where calendar entries end.
-const DAY_END       = new Date('2026-12-17T23:00:00+05:30');
+const PORUWA_START = new Date('2026-12-17T09:25:00+05:30'); // the countdown counts to this
+// No finish time was given — this is only where the calendar entry ends.
+const CALENDAR_END = new Date('2026-12-17T15:00:00+05:30');
 
 /* ========================================================================== */
 
@@ -128,17 +127,16 @@ if(cd.days){
 }
 
 // ---------- Add to Calendar ----------
-// One event spanning the day, with both ceremonies in the description.
-// wedding.ics (the Apple · Outlook button) holds the same event — if a time
-// changes, update both.
+// One Google Calendar event for the Poruwa Ceremony, built from the constants
+// above so it can never disagree with the countdown.
 const calendarBtn = document.getElementById('calendarBtn');
 if(calendarBtn){
   const fmt = (d) => d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
   const params = new URLSearchParams({
     action: 'TEMPLATE',
     text: 'Wedding of Krishal & Jayakshi',
-    dates: `${fmt(PORUWA_START)}/${fmt(DAY_END)}`,
-    details: 'Poruwa Ceremony · 9:25 AM\nEvening Ceremony · 6:00 PM\n(Sri Lanka time)\n\n' + location.origin + location.pathname,
+    dates: `${fmt(PORUWA_START)}/${fmt(CALENDAR_END)}`,
+    details: 'Poruwa Ceremony · 9:25 AM (Sri Lanka time)\n\n' + location.origin + location.pathname,
     location: 'Hotel Green Court, Homagama, Sri Lanka'
   });
   calendarBtn.href = `https://calendar.google.com/calendar/render?${params.toString()}`;
@@ -462,10 +460,16 @@ rsvpForm.addEventListener('submit', async (e) => {
   formMsg.classList.remove('error');
 
   const name = document.getElementById('guestName').value.trim();
+  const phone = document.getElementById('guestPhone').value.trim();
   const guestCountRaw = document.getElementById('guestCount').value.trim();
   const message = document.getElementById('guestMsg').value.trim();
 
   if(!name){ formMsg.textContent = 'Please enter your name.'; formMsg.classList.add('error'); return; }
+  if(!isPlausiblePhone(phone)){
+    formMsg.textContent = 'Please enter a mobile number we can reach you on.';
+    formMsg.classList.add('error');
+    return;
+  }
   if(!attendingVal){ formMsg.textContent = 'Please let us know if you can make it.'; formMsg.classList.add('error'); return; }
 
   // Guest count only applies to those attending; decliners are recorded as 0.
@@ -477,7 +481,7 @@ rsvpForm.addEventListener('submit', async (e) => {
   }
 
   const record = {
-    name, attending: attendingVal, guests: guestCount, message,
+    name, phone, attending: attendingVal, guests: guestCount, message,
     timestamp: new Date().toISOString()
   };
 
@@ -592,10 +596,10 @@ document.querySelectorAll('.dash-filter button').forEach(btn => {
 document.getElementById('refreshBtn').addEventListener('click', async () => {
   if(!dashKey) return;
   const body = document.getElementById('dashBody');
-  body.innerHTML = '<tr><td colspan="5" class="loading-dots">Loading…</td></tr>';
+  body.innerHTML = '<tr><td colspan="6" class="loading-dots">Loading…</td></tr>';
   const result = await fetchRecords(dashKey);
   if(result.ok){ allRecords = result.records; renderDashboard(); }
-  else body.innerHTML = `<tr><td colspan="5" class="loading-dots">${escapeHtml(result.message)}</td></tr>`;
+  else body.innerHTML = `<tr><td colspan="6" class="loading-dots">${escapeHtml(result.message)}</td></tr>`;
 });
 
 function visibleRecords(){
@@ -633,6 +637,7 @@ function renderDashboard(){
     const yesRow = r.attending === 'yes';
     return `<tr>
       <td>${escapeHtml(r.name)}</td>
+      <td>${phoneCell(r.phone)}</td>
       <td><span class="pill ${yesRow ? 'yes' : 'no'}">${yesRow ? 'Attending' : 'Not Attending'}</span></td>
       <td>${yesRow ? escapeHtml(String(r.guests)) : '—'}</td>
       <td>${escapeHtml(r.message || '—')}</td>
@@ -650,9 +655,10 @@ function escapeHtml(str){
 document.getElementById('csvBtn').addEventListener('click', () => {
   const rows = visibleRecords();
   if(rows.length === 0) return;
-  const header = ['Name','Attending','Guests','Message','Submitted'];
+  const header = ['Name','Mobile','Attending','Guests','Message','Submitted'];
   const body = rows.map(r => [
     csvEscape(r.name),
+    csvEscape(r.phone || ''),
     r.attending === 'yes' ? 'Yes' : 'No',
     r.attending === 'yes' ? r.guests : 0,
     csvEscape(r.message || ''),
@@ -673,6 +679,23 @@ document.getElementById('csvBtn').addEventListener('click', () => {
 function csvEscape(val){
   const s = String(val).replace(/"/g, '""');
   return /[",\n]/.test(s) ? `"${s}"` : s;
+}
+
+// Loose on purpose: guests may write 0771234567, 077 123 4567, +94 77 123 4567
+// or a UK/Australian number. All we insist on is 9–15 digits, which every real
+// mobile number has and a typo like "077" doesn't.
+function isPlausiblePhone(value){
+  if(!/^[+(\d][\d\s().-]*$/.test(value)) return false;
+  const digits = value.replace(/\D/g, '');
+  return digits.length >= 9 && digits.length <= 15;
+}
+
+// In the dashboard a number becomes a tap-to-call link. Only digits and a
+// leading + go into the tel: link, whatever was typed.
+function phoneCell(phone){
+  if(!phone) return '—';
+  const dial = String(phone).replace(/(?!^\+)[^\d]/g, '');
+  return `<a class="tel-link" href="tel:${dial}">${escapeHtml(String(phone))}</a>`;
 }
 
 async function sendToGoogleSheet(record){
