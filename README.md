@@ -68,22 +68,36 @@ Every response is stored — both attendees and non-attendees — as one row: `T
 
 ---
 
-## Countdown, music and the opening veil
+## Personal invitation links
 
-**Countdown** — counts to `WEDDING_DATE` at the top of [js/main.js](js/main.js). It's currently set to **17 Dec 2026, 7:00 pm**:
+Add `?to=` and the guest's name to the link, using `+` for spaces:
 
-```js
-const WEDDING_DATE = new Date(2026, 11, 17, 19, 0, 0);
-//                              ^year ^month(0-based, 11=Dec) ^day ^hour ^min
+```
+https://openflowfun.github.io/wedding-invitation/?to=Nimal+Perera
+https://openflowfun.github.io/wedding-invitation/?to=Mr+%26+Mrs+Silva
 ```
 
-Change the hour if the celebration starts at a different time — the **Add to Calendar** button builds its Google Calendar event from this same value (assuming a 5-hour event), so both stay in step automatically. On the day itself the countdown stops at zero and the message below it changes.
+The letter inside the envelope then reads *"Dear, Nimal Perera"*, and their name is pre-filled in the RSVP form (they can still edit it). Write `&` as `%26`. A plain link with no `?to=` reads *"Dear, Our Beloved Guest"*.
+
+## The day's times
+
+Set at the top of [js/main.js](js/main.js), pinned to Sri Lanka time (`+05:30`) so guests overseas see the right countdown:
+
+```js
+const PORUWA_START  = new Date('2026-12-17T09:25:00+05:30'); // the countdown counts to this
+const EVENING_START = new Date('2026-12-17T18:00:00+05:30');
+const DAY_END       = new Date('2026-12-17T23:00:00+05:30'); // assumed — only used to end calendar entries
+```
+
+The calendar buttons add one event, **9:25 AM–11:00 PM**, with both ceremonies in its description. The Apple · Outlook button serves [wedding.ics](wedding.ics), which holds that same event. If a time changes, update **both** `main.js` and `wedding.ics`. The times are also written in the page itself: in the Details card, under the calendar, and in the countdown note.
+
+## Countdown, music and the opening envelope
 
 **Music** — drop an MP3 named exactly `music.mp3` into the `audio/` folder. The player is already wired: the button appears in the bottom-right corner only once a track loads, and stays hidden if there isn't one, so guests never see a broken control. It starts at 35% volume, loops, and begins when a guest taps *Open Invitation* — browsers only allow sound to start after a real tap.
 
 > Use music you have the right to use. Popular songs are copyrighted; a royalty-free instrumental is the safe choice for a link you're sending widely.
 
-**Opening veil** — the curtain screen with the monogram and the *Open Invitation* button. It only appears if JavaScript is running and the visitor hasn't asked for reduced motion; otherwise the invitation is simply open already, so nobody gets stuck behind a curtain that can't lift.
+**Opening envelope** — the sealed envelope guests see first. Tapping it plays a short opening sound (synthesised in the browser, so there's no extra file), then the seal pops off, the flap opens, the letter slides out and comes forward, and the site fades in behind it. Music fades in under the chime. A second tap once the letter is out skips ahead. It only appears if JavaScript is running and the visitor hasn't asked for reduced motion; otherwise the invitation is simply open already.
 
 ---
 
@@ -113,13 +127,13 @@ There's deliberately **no street address printed** on the site. Sources disagree
 
 Live photos are in `images/`, named by scene (`couple-beach.jpg`, `couple-hills.jpg`, …). The untouched WhatsApp originals are kept in `images/originals/` in case you want to recrop anything.
 
-- **Hero portrait:** `images/couple-uniform.jpg`, shown in an arched frame. Swap the `src` in the `.couple-photo` block in [index.html](index.html).
+- **Hero and letter:** `images/couple-illustration.webp`, shown whole (not cropped) in the arched frame and on the letter inside the envelope.
 - **Cinematic band:** `images/couple-mountains.jpg`, the full-width photo with the quote over it.
-- **Gallery mosaic:** seven tiles in `<section class="gallery">`.
+- **Gallery mosaic:** eight tiles in `<section class="gallery">`, including the service-dress photo `couple-uniform.jpg`.
 
 ### Changing the gallery
 
-Each tile carries a size class: `big` (2×2), `tall` (1×2), `wide` (2×1), or none (1×1). The current mix — 1 big + 4 tall + 2 wide — tiles perfectly with no gaps on both the 4-column desktop grid and the 2-column mobile grid. If you add or remove photos, keep the total cell count a multiple of 4 to keep the mosaic flush.
+Each tile carries a size class: `big` (2×2), `tall` (1×2), `wide` (2×1), or none (1×1). The current mix is 2 big, 4 tall and 2 wide (20 cells), which tiles with no gaps on both the 4-column desktop grid and the 2-column mobile grid. If you add or remove photos, keep the total cell count a multiple of 4 so the mosaic stays flush.
 
 The `alt` text on each image doubles as the hover caption and the lightbox caption, so write it as a caption.
 

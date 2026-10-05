@@ -1,0 +1,23 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Krishal & Jayakshi//Wedding Invitation//EN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+BEGIN:VEVENT
+UID:krishal-jayakshi-wedding-20261217@openflowfun.github.io
+DTSTAMP:20261004T080200Z
+DTSTART:20261217T035500Z
+DTEND:20261217T173000Z
+SUMMARY:Wedding of Krishal & Jayakshi
+LOCATION:Hotel Green Court\, Homagama\, Sri Lanka
+GEO:6.8475291;79.9944897
+DESCRIPTION:Poruwa Ceremony · 9:25 AM\nEvening Ceremony · 6:00 PM\n(Sri L
+ anka time)\n\nhttps://openflowfun.github.io/wedding-invitation/
+URL:https://openflowfun.github.io/wedding-invitation/
+BEGIN:VALARM
+TRIGGER:-P1D
+ACTION:DISPLAY
+DESCRIPTION:Tomorrow: Wedding of Krishal & Jayakshi
+END:VALARM
+END:VEVENT
+END:VCALENDAR

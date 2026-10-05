@@ -6,9 +6,13 @@
 
 const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwb2moa8MQ3FNFyB5OBWFvbCzP0ElvvJPJYWR9G4h6a94R-1DapDtu0ldX8EnG3j35z/exec';
 
-// When the celebration begins. Months are 0-based, so 11 = December.
-// Change the last two numbers to set the start time (currently 19:00).
-const WEDDING_DATE = new Date(2026, 11, 17, 19, 0, 0);
+// The day, pinned to Sri Lanka time with "+05:30". Without the offset these
+// would be read in each visitor's own timezone, so a relative in London would
+// see a countdown and calendar entry 5½ hours out.
+const PORUWA_START  = new Date('2026-12-17T09:25:00+05:30'); // the countdown counts to this
+const EVENING_START = new Date('2026-12-17T18:00:00+05:30');
+// No finish time was given — this is only where calendar entries end.
+const DAY_END       = new Date('2026-12-17T23:00:00+05:30');
 
 /* ========================================================================== */
 
@@ -98,7 +102,7 @@ function setCell(el, value){
 }
 
 function updateCountdown(){
-  const diff = WEDDING_DATE - new Date();
+  const diff = PORUWA_START - new Date();
 
   if(diff <= 0){
     setCell(cd.days, '0'); setCell(cd.hours, '00');
@@ -124,27 +128,92 @@ if(cd.days){
 }
 
 // ---------- Add to Calendar ----------
-// Builds a Google Calendar event from the same date the countdown uses.
+// One event spanning the day, with both ceremonies in the description.
+// wedding.ics (the Apple · Outlook button) holds the same event — if a time
+// changes, update both.
 const calendarBtn = document.getElementById('calendarBtn');
 if(calendarBtn){
-  const end = new Date(WEDDING_DATE.getTime() + 5 * 60 * 60 * 1000); // 5-hour event
   const fmt = (d) => d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
   const params = new URLSearchParams({
     action: 'TEMPLATE',
     text: 'Wedding of Krishal & Jayakshi',
-    dates: `${fmt(WEDDING_DATE)}/${fmt(end)}`,
-    details: 'We would be delighted to have you with us.',
-    location: 'Hotel Green Court, Homagama'
+    dates: `${fmt(PORUWA_START)}/${fmt(DAY_END)}`,
+    details: 'Poruwa Ceremony · 9:25 AM\nEvening Ceremony · 6:00 PM\n(Sri Lanka time)\n\n' + location.origin + location.pathname,
+    location: 'Hotel Green Court, Homagama, Sri Lanka'
   });
   calendarBtn.href = `https://calendar.google.com/calendar/render?${params.toString()}`;
 }
 
-// ---------- Background music ----------
-// The button only appears once the audio file has proven loadable, so a
-// missing or not-yet-added track leaves no dead control on the page.
+// ---------- Personal greeting: ?to=Name ----------
+// Send each guest a link like  …/wedding-invitation/?to=Nimal+Perera  and the
+// letter in the envelope is addressed to them. textContent (never innerHTML)
+// keeps whatever is typed in the link as plain text.
+const guestParam = (new URLSearchParams(location.search).get('to') || '').trim().slice(0, 60);
+if(guestParam){
+  const letterGuest = document.getElementById('letterGuest');
+  letterGuest.textContent = guestParam;
+  if(guestParam.length > 22) letterGuest.classList.add('long');
+  // Save them typing it again — they can still edit it.
+  const nameField = document.getElementById('guestName');
+  if(nameField && !nameField.value) nameField.value = guestParam;
+}
+
+// ---------- Sound ----------
+// Music is routed through the Web Audio API rather than played straight from
+// the <audio> element, for two reasons: it can fade in smoothly under the
+// opening chime, and iPhones ignore audio.volume entirely — without this
+// they'd play at full volume however low it was set.
+const MUSIC_VOLUME = 0.35;
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
 const music = document.getElementById('bgMusic');
 const musicToggle = document.getElementById('musicToggle');
-let musicReady = false;
+let actx = null;
+let musicGain = null;
+let musicRouted = false;
+let musicFailed = false;
+
+function audioContext(){
+  if(!AudioCtx) return null;
+  if(!actx){
+    try { actx = new AudioCtx(); } catch(e){ return null; }
+  }
+  if(actx.state === 'suspended') actx.resume();
+  return actx;
+}
+
+function routeMusic(){
+  if(musicRouted) return true;
+  const ctx = audioContext();
+  if(!ctx) return false;
+  try {
+    const source = ctx.createMediaElementSource(music);
+    musicGain = ctx.createGain();
+    musicGain.gain.value = MUSIC_VOLUME;
+    source.connect(musicGain);
+    musicGain.connect(ctx.destination);
+    musicRouted = true;
+  } catch(e){
+    return false;
+  }
+  return true;
+}
+
+// play() is always called synchronously inside the tap handler — browsers
+// only allow sound to start from a real gesture — and any delay is done with
+// the volume envelope instead of a timer.
+function startMusic(delay = 0, fade = 0.8){
+  if(!music || musicFailed) return;
+  if(routeMusic()){
+    const t = actx.currentTime;
+    musicGain.gain.cancelScheduledValues(t);
+    musicGain.gain.setValueAtTime(0.0001, t);
+    musicGain.gain.setValueAtTime(0.0001, t + delay);
+    musicGain.gain.linearRampToValueAtTime(MUSIC_VOLUME, t + delay + fade);
+  } else {
+    music.volume = MUSIC_VOLUME;
+  }
+  music.play().then(reflectMusicState).catch(reflectMusicState);
+}
 
 function reflectMusicState(){
   const playing = music && !music.paused;
@@ -155,66 +224,158 @@ function reflectMusicState(){
 }
 
 if(music && musicToggle){
-  music.volume = 0.35;
+  // The button only appears once the track has proven loadable, so a missing
+  // file leaves no dead control on the page.
   music.addEventListener('canplaythrough', () => {
-    musicReady = true;
     musicToggle.classList.add('available');
   }, { once:true });
-  // No track present (or it can't be decoded) — stay silent and hidden.
   music.addEventListener('error', () => {
-    musicReady = false;
+    musicFailed = true;
     musicToggle.classList.remove('available');
+    const hint = document.getElementById('introSound');
+    if(hint) hint.style.display = 'none';
   });
   music.load();
 
   musicToggle.addEventListener('click', () => {
-    if(music.paused){
-      music.play().then(reflectMusicState).catch(() => {});
-    } else {
-      music.pause();
-      reflectMusicState();
-    }
+    if(music.paused) startMusic(0, 0.8);
+    else { music.pause(); reflectMusicState(); }
   });
   music.addEventListener('play', reflectMusicState);
   music.addEventListener('pause', reflectMusicState);
-}
 
-// Browsers only allow audio to start from a genuine user gesture — opening
-// the invitation is exactly that, so the music begins there.
-function startMusic(){
-  if(!music || !musicReady) return;
-  music.play().then(reflectMusicState).catch(() => {
-    // Autoplay still refused; the toggle stays available for a manual start.
-    reflectMusicState();
+  // Phones suspend audio when the screen locks or the tab is switched away;
+  // pick the music back up on return if it was meant to be playing.
+  document.addEventListener('visibilitychange', () => {
+    if(!document.hidden && actx && actx.state !== 'running' && !music.paused) actx.resume();
   });
 }
 
-// ---------- Intro veil ----------
-const introVeil = document.getElementById('introVeil');
-const introOpen = document.getElementById('introOpen');
+// The sound of opening: a soft click as the wax seal gives, a breath of paper
+// as the letter slides out, then a small bell-like chime rising through
+// E major. Synthesised on the spot, so there is no extra file to download.
+function playOpeningSound(){
+  const ctx = audioContext();
+  if(!ctx) return;
+  const t = ctx.currentTime;
+  const out = ctx.createGain();
+  out.gain.value = 0.8;
+  out.connect(ctx.destination);
 
-function openInvitation(){
-  introVeil.classList.add('opening');
-  startMusic();
-  // Let the curtains part before releasing the page underneath.
-  setTimeout(() => {
-    introVeil.classList.add('gone');
-    document.body.classList.remove('veiled');
-    onScroll();
-  }, 1000);
+  const noise = (seconds) => {
+    const length = Math.floor(ctx.sampleRate * seconds);
+    const buffer = ctx.createBuffer(1, length, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for(let i = 0; i < length; i++) data[i] = Math.random() * 2 - 1;
+    const src = ctx.createBufferSource();
+    src.buffer = buffer;
+    return src;
+  };
+  const chain = (...nodes) => { for(let i = 0; i < nodes.length - 1; i++) nodes[i].connect(nodes[i + 1]); };
+
+  // Seal click
+  const click = noise(0.06), clickHp = ctx.createBiquadFilter(), clickGain = ctx.createGain();
+  clickHp.type = 'highpass'; clickHp.frequency.value = 1800;
+  clickGain.gain.setValueAtTime(0.35, t);
+  clickGain.gain.exponentialRampToValueAtTime(0.001, t + 0.06);
+  chain(click, clickHp, clickGain, out);
+  click.start(t);
+
+  // Paper slide: a filtered hush that brightens as the letter moves
+  const slide = noise(1.2), slideBp = ctx.createBiquadFilter(), slideGain = ctx.createGain();
+  slideBp.type = 'bandpass'; slideBp.Q.value = 0.9;
+  slideBp.frequency.setValueAtTime(900, t + 0.55);
+  slideBp.frequency.exponentialRampToValueAtTime(3400, t + 1.5);
+  slideGain.gain.setValueAtTime(0.0001, t + 0.55);
+  slideGain.gain.exponentialRampToValueAtTime(0.2, t + 0.85);
+  slideGain.gain.exponentialRampToValueAtTime(0.0001, t + 1.65);
+  chain(slide, slideBp, slideGain, out);
+  slide.start(t + 0.55);
+
+  // Chime: E5 G#5 B5 E6, each with a faint octave above so it rings like a bell
+  [659.25, 830.61, 987.77, 1318.51].forEach((freq, i) => {
+    const at = t + 1.0 + i * 0.16;
+    [[freq, 0.15], [freq * 2, 0.035]].forEach(([f, peak]) => {
+      const osc = ctx.createOscillator(), gain = ctx.createGain();
+      osc.type = 'sine'; osc.frequency.value = f;
+      gain.gain.setValueAtTime(0.0001, at);
+      gain.gain.exponentialRampToValueAtTime(peak, at + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, at + 1.9);
+      chain(osc, gain, out);
+      osc.start(at); osc.stop(at + 2);
+    });
+  });
 }
 
-// Arm the veil only when JS is running and motion is welcome. Anyone else
+// ---------- Opening envelope ----------
+const intro = document.getElementById('intro');
+const envelope = document.getElementById('envelope');
+const hero = document.getElementById('home');
+let introStage = 'closed';           // closed → opening → done
+const introTimers = [];
+const later = (fn, ms) => introTimers.push(setTimeout(fn, ms));
+
+function openEnvelope(){
+  introStage = 'opening';
+  playOpeningSound();
+  startMusic(1.9, 3.5);              // starts now, but stays silent until the chime has rung
+  intro.classList.add('opening');    // words fade; seal pops; flap swings open
+  envelope.classList.add('open');
+  later(() => envelope.classList.add('rise'), 620);   // letter slides up
+  later(() => envelope.classList.add('lift'), 1650);  // envelope falls away, letter comes forward
+  later(finishIntro, 4100);                           // time to read "Dear, …", then in
+}
+
+function finishIntro(){
+  if(introStage === 'done') return;
+  introStage = 'done';
+  introTimers.forEach(clearTimeout);
+  intro.classList.add('done');
+  document.body.classList.remove('veiled');
+  revealHero();
+  onScroll();
+  // Once faded, take it out of the page (and the accessibility tree) entirely.
+  setTimeout(() => { intro.hidden = true; }, 900);
+}
+
+function revealHero(){
+  hero.classList.add('hero-revealing');
+  requestAnimationFrame(() => hero.classList.remove('hero-pending'));
+  setTimeout(() => hero.classList.remove('hero-revealing'), 2800);
+}
+
+// Arm the envelope only when JS is running and motion is welcome. Anyone else
 // simply lands on the invitation already open.
-if(introVeil && introOpen && !prefersReduced){
-  introVeil.classList.add('armed');
+if(intro && envelope && !prefersReduced){
+  intro.classList.add('armed');
   document.body.classList.add('veiled');
-  introOpen.addEventListener('click', openInvitation);
-  // Hide the sound hint if there's no track to hear.
-  setTimeout(() => {
-    const hint = document.getElementById('introHint');
-    if(hint && !musicReady) hint.style.display = 'none';
-  }, 1200);
+  hero.classList.add('hero-pending');
+  // The whole screen is the tap target. Once the letter is out, a second tap
+  // skips the rest for anyone who doesn't want to wait.
+  intro.addEventListener('click', () => {
+    if(introStage === 'closed') openEnvelope();
+    else if(envelope.classList.contains('lift')) finishIntro();
+  });
+}
+
+// ---------- Guest-count stepper ----------
+const guestCountInput = document.getElementById('guestCount');
+const guestMinus = document.getElementById('guestMinus');
+const guestPlus = document.getElementById('guestPlus');
+const GUESTS_MIN = 1, GUESTS_MAX = 20;
+
+function setGuests(n){
+  const v = Math.min(GUESTS_MAX, Math.max(GUESTS_MIN, parseInt(n, 10) || GUESTS_MIN));
+  guestCountInput.value = v;
+  guestMinus.disabled = v <= GUESTS_MIN;
+  guestPlus.disabled = v >= GUESTS_MAX;
+}
+if(guestCountInput && guestMinus && guestPlus){
+  guestMinus.addEventListener('click', () => setGuests(Number(guestCountInput.value) - 1));
+  guestPlus.addEventListener('click', () => setGuests(Number(guestCountInput.value) + 1));
+  // Typing is still allowed; tidy it up when they leave the box.
+  guestCountInput.addEventListener('change', () => setGuests(guestCountInput.value));
+  setGuests(guestCountInput.value);
 }
 
 // ---------- Menu ----------

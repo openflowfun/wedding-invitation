@@ -12,15 +12,39 @@
 </head>
 <body>
 
-<!-- Opening veil. Stays invisible unless JS arms it, so the page is never
-     locked behind a curtain that can't be lifted. -->
-<div class="intro-veil" id="introVeil">
-  <div class="intro-inner">
-    <div class="intro-monogram">K &amp; J</div>
-    <div class="intro-names">Krishal &amp; Jayakshi</div>
-    <div class="intro-date">are getting married</div>
-    <button class="intro-open" id="introOpen">Open Invitation</button>
-    <div class="intro-hint" id="introHint">Best enjoyed with sound</div>
+<!-- Opening envelope. Stays invisible unless JS arms it, so the page is never
+     locked behind an envelope that can't be opened. -->
+<div class="intro" id="intro">
+  <div class="intro-head">
+    <div class="ribbon-divider"><span></span><span></span><span></span><span></span><span></span></div>
+    <p class="intro-invited">You are cordially invited</p>
+  </div>
+
+  <button class="envelope" id="envelope" type="button" aria-label="Open your invitation">
+    <span class="env-back"></span>
+    <!-- The letter. ?to=Name in the link replaces "Our Beloved Guest". -->
+    <span class="env-letter">
+      <img class="letter-art" src="images/couple-illustration.webp" alt="">
+      <span class="letter-kicker">The wedding of</span>
+      <span class="letter-names">Krishal &amp; Jayakshi</span>
+      <span class="letter-date">17 · 12 · 2026</span>
+      <span class="letter-rule"></span>
+      <span class="letter-dear">Dear,</span>
+      <span class="letter-guest" id="letterGuest">Our Beloved Guest</span>
+    </span>
+    <span class="env-front"></span>
+    <span class="env-flap-shadow"></span>
+    <span class="env-flap"></span>
+    <!-- Ribbon in the ribbon-divider colours, hanging from the seal like a
+         medal ribbon — a nod to the two of you in service dress. -->
+    <span class="env-ribbon"></span>
+    <span class="env-seal"><span class="seal-mark">K&amp;J</span></span>
+  </button>
+
+  <div class="intro-foot">
+    <p class="intro-names">Krishal &amp; Jayakshi</p>
+    <p class="intro-tap">Tap the seal to open</p>
+    <p class="intro-sound" id="introSound">Best enjoyed with sound</p>
   </div>
 </div>
 
@@ -70,17 +94,18 @@
   <div class="hero-bg" aria-hidden="true">
     <img src="images/couple-beach.jpg" alt="">
   </div>
-  <div class="hero-eyebrow eyebrow">Together with their families</div>
-  <h1>Krishal <span class="amp">&amp;</span> Jayakshi</h1>
-  <div class="hero-sub">are getting married</div>
+  <!-- hero-step + --i: after the envelope opens, these rise in one by one. -->
+  <div class="hero-eyebrow eyebrow hero-step" style="--i:0">Together with their families</div>
+  <h1 class="hero-step" style="--i:1">Krishal <span class="amp">&amp;</span> Jayakshi</h1>
+  <div class="hero-sub hero-step" style="--i:2">are getting married</div>
   <div class="couple-img-wrap" id="heroImg">
-    <div class="couple-photo">
-      <img src="images/couple-uniform.jpg" alt="Krishal and Jayakshi in service dress">
+    <div class="couple-photo illustrated hero-step" style="--i:3">
+      <img src="images/couple-illustration.webp" alt="Illustration of Krishal in service dress and Jayakshi in her bridal sari, holding a bouquet">
     </div>
   </div>
-  <div class="hero-date">17th December 2026</div>
-  <div class="hero-venue">Hotel Green Court, Homagama</div>
-  <a href="#rsvp" class="cta-btn">RSVP</a>
+  <div class="hero-date hero-step" style="--i:4">17th December 2026</div>
+  <div class="hero-venue hero-step" style="--i:5">Hotel Green Court, Homagama</div>
+  <a href="#rsvp" class="cta-btn hero-step" style="--i:6">RSVP</a>
   <div class="scroll-cue" aria-hidden="true"><span>Scroll</span><span class="line"></span></div>
 </section>
 
@@ -97,8 +122,37 @@
       <div class="count-cell"><span class="count-num" id="cdSecs">—</span><span class="count-lbl">Seconds</span></div>
     </div>
 
-    <p class="countdown-note reveal reveal-delay-2" id="countdownNote">Every day brings us closer to celebrating with you.</p>
-    <a class="calendar-btn reveal reveal-delay-3" id="calendarBtn" href="#" target="_blank" rel="noopener">Add to Calendar</a>
+    <p class="countdown-note reveal reveal-delay-2" id="countdownNote">Counting down to the Poruwa Ceremony at 9:25 AM.</p>
+
+    <!-- Month card. The grid is static, generated from the real calendar, so
+         it needs no JavaScript and can never draw the wrong weekday. -->
+    <div class="cal-card reveal">
+      <div class="cal-head">
+        <span class="cal-month">December</span>
+        <span class="cal-year">2 0 2 6</span>
+      </div>
+      <div class="cal-grid" aria-hidden="true">
+        <span class="cal-dow">Su</span><span class="cal-dow">Mo</span><span class="cal-dow">Tu</span><span class="cal-dow">We</span><span class="cal-dow">Th</span><span class="cal-dow">Fr</span><span class="cal-dow">Sa</span>
+        <span></span><span></span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span>
+        <span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span>
+        <span>13</span><span>14</span><span>15</span><span>16</span><span class="is-wedding">17</span><span>18</span><span>19</span>
+        <span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span>
+        <span>27</span><span>28</span><span>29</span><span>30</span><span>31</span>
+      </div>
+      <p class="cal-caption">Thursday, the seventeenth of December</p>
+    </div>
+
+    <div class="day-times reveal reveal-delay-1">
+      <div class="day-time"><span class="dt-time">9:25 AM</span><span class="dt-label">Poruwa Ceremony</span></div>
+      <div class="day-time"><span class="dt-time">6:00 PM</span><span class="dt-label">Evening Ceremony</span></div>
+    </div>
+
+    <div class="cal-actions reveal reveal-delay-2">
+      <a class="calendar-btn" id="calendarBtn" href="#" target="_blank" rel="noopener">Google Calendar</a>
+      <!-- No `download` attribute on purpose: without it, iPhones open the
+           .ics straight into the Calendar app's "Add" sheet. -->
+      <a class="calendar-btn" href="wedding.ics">Apple · Outlook</a>
+    </div>
   </div>
 </section>
 
@@ -111,6 +165,10 @@
       <div class="detail-card reveal">
         <span class="eyebrow">When</span>
         <p>Thursday, 17th December 2026</p>
+        <ul class="when-times">
+          <li><span>9:25 AM</span> Poruwa Ceremony</li>
+          <li><span>6:00 PM</span> Evening Ceremony</li>
+        </ul>
       </div>
       <div class="detail-card reveal reveal-delay-1">
         <span class="eyebrow">Where</span>
@@ -184,9 +242,10 @@
 
     <!--
       Mosaic tiles. Size classes: "big" = 2x2, "tall" = 1x2, "wide" = 2x1,
-      no class = 1x1. The current order tiles perfectly with no gaps on both
-      the 4-column (desktop) and 2-column (mobile) grids — if you add or
-      remove photos, keep the mix balanced so the mosaic stays flush.
+      no class = 1x1. The current order — 2 big, 4 tall, 2 wide (20 cells) —
+      tiles perfectly with no gaps on both the 4-column (desktop) and
+      2-column (mobile) grids. If you add or remove photos, keep the total
+      cell count a multiple of 4 so the mosaic stays flush.
       The alt text doubles as the hover caption and lightbox caption.
     -->
     <div class="gallery-grid">
@@ -210,6 +269,10 @@
         <img src="images/couple-birthday.jpg" alt="Celebrating another year" loading="lazy">
         <div class="gallery-caption">Celebrating another year</div>
       </div>
+      <div class="gallery-item big reveal reveal-delay-5">
+        <img class="focus-top" src="images/couple-uniform.jpg" alt="In service dress, side by side" loading="lazy">
+        <div class="gallery-caption">In service dress, side by side</div>
+      </div>
       <div class="gallery-item wide reveal reveal-delay-5">
         <img src="images/couple-zoo.jpg" alt="Wandering, as always" loading="lazy">
         <div class="gallery-caption">Wandering, as always</div>
@@ -228,6 +291,7 @@
     <div class="eyebrow reveal">Kindly respond</div>
     <div class="section-title reveal">RSVP</div>
     <div class="ribbon-divider reveal"><span></span><span></span><span></span><span></span><span></span></div>
+    <p class="rsvp-deadline reveal">Please reply by <strong>10th December 2026</strong></p>
 
     <form class="rsvp-form reveal" id="rsvpForm">
       <div class="field">
@@ -245,7 +309,11 @@
 
       <div class="field guests-field" id="guestsField">
         <label for="guestCount">Number of Guests (including you)</label>
-        <input type="text" inputmode="numeric" id="guestCount" placeholder="e.g. 2">
+        <div class="stepper">
+          <button type="button" class="step-btn" id="guestMinus" aria-label="One fewer guest">−</button>
+          <input type="number" id="guestCount" value="1" min="1" max="20" inputmode="numeric">
+          <button type="button" class="step-btn" id="guestPlus" aria-label="One more guest">+</button>
+        </div>
       </div>
 
       <div class="field">

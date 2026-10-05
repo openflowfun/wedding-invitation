@@ -200,6 +200,25 @@ img{display:block; max-width:100%;}
   width:100%; aspect-ratio:3/4; object-fit:cover; object-position:center 22%;
   border-radius:190px 190px 4px 4px;
 }
+/* The illustration is shown whole rather than cropped: cover would clip his
+   cap at the top of the arch and her bouquet hand at the side. Its near-white
+   ground matches the white frame, so the spare space reads as the arch. */
+.couple-photo.illustrated img{
+  object-fit:contain; object-position:center 72%;
+  background:#fff;
+}
+
+/* Staggered entrance after the envelope opens. .hero-pending is only ever
+   added by JS when the envelope is shown, so without JS nothing is hidden.
+   The transition lives on .hero-revealing alone so it can't override the
+   RSVP button's own hover transitions afterwards. */
+.hero.hero-pending .hero-step{ opacity:0; transform:translateY(18px); }
+.hero.hero-pending .scroll-cue{ opacity:0; }
+.hero.hero-revealing .hero-step{
+  transition:opacity .9s ease, transform 1s cubic-bezier(.2,.7,.3,1);
+  transition-delay:calc(var(--i, 0) * 150ms);
+}
+.hero.hero-revealing .scroll-cue{ transition:opacity .9s ease 1.2s; }
 .hero-date{
   font-family:'Cinzel', serif;
   font-size:1.05rem;
@@ -416,6 +435,8 @@ section{ padding:90px 24px; position:relative; }
   opacity:0; transition:opacity .35s ease;
 }
 .gallery-item:hover img{ transform:scale(1.07); }
+/* Portrait photos in a landscape tile: keep the faces, crop the shoes. */
+.gallery-item img.focus-top{ object-position:center 24%; }
 .gallery-item:hover::after{ opacity:1; }
 .gallery-caption{
   position:absolute; left:0; right:0; bottom:0; z-index:2;
@@ -500,6 +521,34 @@ section{ padding:90px 24px; position:relative; }
 .toggle-btn.active.no{ background:var(--burgundy); border-color:var(--burgundy); }
 .guests-field{ display:none; }
 .guests-field.show{ display:block; }
+
+/* Guest-count stepper: −/+ buttons around a number you can still type into. */
+.stepper{
+  display:flex; align-items:stretch; width:fit-content;
+  border:1px solid rgba(92,63,99,0.28); border-radius:2px;
+  background:var(--white);
+}
+.step-btn{
+  width:52px; border:0; background:var(--lavender-soft); color:var(--plum-deep);
+  font-size:1.4rem; line-height:1; cursor:pointer;
+  transition:background .2s ease, color .2s ease;
+}
+.step-btn:hover:not(:disabled){ background:var(--plum-deep); color:var(--cream); }
+.step-btn:disabled{ opacity:0.35; cursor:not-allowed; }
+.stepper input{
+  width:64px; padding:12px 0; border:0; text-align:center;
+  font-family:'Cinzel', serif; font-size:1.2rem; color:var(--ink);
+  background:transparent;
+  -moz-appearance:textfield; appearance:textfield;
+}
+.stepper input::-webkit-outer-spin-button,
+.stepper input::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0; }
+.stepper input:focus{ outline:2px solid var(--plum); outline-offset:-2px; }
+
+.rsvp-deadline{
+  margin-top:10px; font-style:italic; font-size:1.1rem; color:var(--plum);
+}
+.rsvp-deadline strong{ font-style:normal; font-weight:600; color:var(--plum-deep); }
 .submit-btn{
   width:100%; padding:16px; margin-top:6px;
   background:var(--plum-deep); color:var(--cream); border:none;
@@ -582,79 +631,278 @@ th{ font-family:'Cinzel',serif; font-size:0.62rem; letter-spacing:0.08em; text-t
 .empty-state{ text-align:center; padding:40px 10px; color:var(--ink); opacity:0.6; font-style:italic; }
 .loading-dots{ text-align:center; padding:30px; opacity:0.6; }
 
-/* ---------- Intro veil ----------
+/* ---------- Opening envelope ----------
    Hidden by default. JavaScript adds .armed only once it confirms it can run,
-   so with JS disabled the invitation is simply open already — nobody is ever
-   locked out behind a curtain that can't lift. */
-.intro-veil{ display:none; }
-.intro-veil.armed{
-  --veil-bg:linear-gradient(160deg, var(--plum-deep) 0%, #241830 55%, var(--plum) 100%);
-  display:flex; position:fixed; inset:0; z-index:300;
-  align-items:center; justify-content:center; text-align:center;
-  background:var(--veil-bg);
-  transition:opacity .9s ease, visibility .9s ease;
-}
-/* Both curtains are FULL-size layers painting the identical gradient, then
-   clipped to show only their half. Painting at the same size is what keeps
-   them seamless — a half-height box would render the angled gradient at a
-   different scale and leave a visible line across the middle. */
-.intro-veil.armed::before,
-.intro-veil.armed::after{
-  content:''; position:absolute; inset:0;
-  background-image:var(--veil-bg);
-  z-index:1;
-  transition:transform 1.05s cubic-bezier(.76,0,.24,1);
-}
-.intro-veil.armed::before{ clip-path:inset(0 0 50% 0); }
-.intro-veil.armed::after{ clip-path:inset(50% 0 0 0); }
-/* The two halves part like curtains, then the whole layer fades out. */
-.intro-veil.opening::before{ transform:translateY(-100%); }
-.intro-veil.opening::after{ transform:translateY(100%); }
-.intro-veil.opening .intro-inner{ opacity:0; transform:translateY(-18px); }
-.intro-veil.gone{ opacity:0; visibility:hidden; pointer-events:none; }
+   so with JS disabled (or reduced motion requested) the invitation is simply
+   open already — nobody is ever stuck behind an envelope that won't open.
 
-.intro-inner{
-  position:relative; z-index:3; padding:32px 24px;
-  transition:opacity .5s ease, transform .7s ease;
+   Sequence, driven by classes JS adds to #envelope:
+     .open  — seal pops off, ribbon slips away, flap swings up and back
+     .rise  — the letter slides up out of the envelope
+     .lift  — the envelope falls away and the letter comes forward to read
+   then #intro gets .done and fades to reveal the site. */
+.intro{ display:none; }
+.intro.armed{
+  display:flex; position:fixed; inset:0; z-index:300;
+  flex-direction:column; align-items:center; justify-content:center;
+  gap:clamp(18px, 3.4vh, 34px);
+  padding:24px 16px;
+  text-align:center;
+  overflow:hidden;
+  cursor:pointer;
+  background:
+    radial-gradient(circle at 15% 10%, rgba(185,166,209,0.38), transparent 46%),
+    radial-gradient(circle at 85% 90%, rgba(198,161,91,0.22), transparent 48%),
+    linear-gradient(180deg, var(--cream) 0%, var(--cream-2) 100%);
+  transition:opacity .85s ease, visibility .85s ease;
 }
-.intro-monogram{
-  font-family:'Beau Rivage', cursive;
-  font-size:clamp(3.6rem, 15vw, 6rem);
-  color:var(--cream); line-height:1;
-  animation:introRise 1.1s cubic-bezier(.2,.7,.3,1) both;
+.intro.done{ opacity:0; visibility:hidden; pointer-events:none; }
+/* Keep the page from scrolling behind the envelope while it's up. */
+body.veiled{ overflow:hidden; }
+
+.intro-head, .intro-foot{
+  transition:opacity .5s ease, transform .6s ease;
+  /* `backwards`, not `both`: a fill that outlasts the animation would keep
+     holding opacity at 1 and silently block the fade-out when opening. */
+  animation:introRise 1.1s cubic-bezier(.2,.7,.3,1) backwards;
+}
+.intro-foot{ animation-delay:.25s; }
+.intro.opening .intro-head{ opacity:0; transform:translateY(-14px); }
+.intro.opening .intro-foot{ opacity:0; transform:translateY(14px); }
+.intro-head .ribbon-divider{ padding:0 0 12px; }
+.intro-head .ribbon-divider span{ width:22px; height:4px; }
+.intro-invited{
+  font-family:'Cinzel', serif; font-weight:600;
+  font-size:0.68rem; letter-spacing:0.34em; text-transform:uppercase;
+  color:var(--plum);
 }
 .intro-names{
-  font-family:'Cinzel', serif;
-  font-size:0.72rem; letter-spacing:0.3em; text-transform:uppercase;
-  color:var(--lavender-soft); margin-top:14px;
-  animation:introRise 1.1s cubic-bezier(.2,.7,.3,1) .15s both;
+  font-family:'Beau Rivage', cursive;
+  font-size:clamp(2.2rem, 9vw, 3rem); line-height:1.1;
+  color:var(--plum-deep);
 }
-.intro-date{
-  font-family:'Cormorant Garamond', serif; font-style:italic;
-  font-size:1.05rem; color:var(--gold); margin-top:10px;
-  animation:introRise 1.1s cubic-bezier(.2,.7,.3,1) .25s both;
+.intro-tap{
+  margin-top:6px;
+  font-style:italic; font-size:1.08rem; color:var(--plum);
+  animation:tapFloat 2.8s ease-in-out infinite;
 }
-.intro-open{
-  margin-top:34px; padding:15px 44px;
-  background:transparent; color:var(--cream);
-  border:1px solid rgba(231,222,239,0.55); border-radius:2px;
-  font-family:'Cinzel', serif; font-size:0.74rem; letter-spacing:0.22em; text-transform:uppercase;
-  cursor:pointer;
-  animation:introRise 1.1s cubic-bezier(.2,.7,.3,1) .4s both;
-  transition:background .3s ease, color .3s ease, border-color .3s ease;
-}
-.intro-open:hover{ background:var(--cream); color:var(--plum-deep); border-color:var(--cream); }
-.intro-hint{
-  margin-top:16px; font-size:0.72rem; font-style:italic;
-  color:rgba(231,222,239,0.5);
-  animation:introRise 1.1s cubic-bezier(.2,.7,.3,1) .55s both;
+.intro-sound{
+  margin-top:6px; font-size:0.78rem; font-style:italic;
+  color:var(--ink); opacity:0.5;
 }
 @keyframes introRise{
   from{ opacity:0; transform:translateY(20px); }
   to{ opacity:1; transform:translateY(0); }
 }
-/* Keep the page from scrolling behind the veil while it's up. */
-body.veiled{ overflow:hidden; }
+@keyframes tapFloat{
+  0%, 100%{ transform:translateY(0); opacity:0.75; }
+  50%{ transform:translateY(-4px); opacity:1; }
+}
+
+/* The envelope. Every measurement inside is in em, and the em is tied to the
+   envelope's width, so the whole thing — letter text included — scales as
+   one piece from a small phone to a desktop. */
+.envelope{
+  --envw:min(86vw, 380px);
+  position:relative; display:block;
+  width:var(--envw); aspect-ratio:1.25;
+  padding:0; border:0; background:none;
+  font:inherit; font-size:calc(var(--envw) / 24);
+  color:inherit; cursor:pointer;
+  perspective:1100px;
+  -webkit-tap-highlight-color:transparent;
+  animation:introRise 1.1s cubic-bezier(.2,.7,.3,1) .12s backwards,
+            envBob 4.5s ease-in-out 1.3s infinite;
+}
+.envelope:focus-visible{ outline:2px solid var(--plum); outline-offset:10px; border-radius:6px; }
+/* Freeze the idle bob where it is rather than cancelling it, so tapping
+   never makes the envelope jump. */
+.envelope.open{ animation-play-state:paused; }
+@keyframes envBob{
+  0%, 100%{ transform:translateY(0); }
+  50%{ transform:translateY(-7px); }
+}
+/* Absolutely-positioned spans are block-level automatically. */
+.envelope > span{ position:absolute; }
+
+/* Inside of the envelope: plum liner with a faint gold lattice, the colour
+   you see when the flap swings open. */
+.env-back{
+  inset:0; z-index:1; border-radius:.35em;
+  background:
+    repeating-linear-gradient(45deg, rgba(198,161,91,0.13) 0 1px, transparent 1px 10px),
+    repeating-linear-gradient(-45deg, rgba(198,161,91,0.13) 0 1px, transparent 1px 10px),
+    linear-gradient(180deg, #4b3353 0%, var(--plum-deep) 100%);
+  box-shadow:0 1.3em 2.4em rgba(58,39,64,0.22);
+}
+
+/* The letter. Text keeps its natural size; the illustration takes whatever
+   height is left, so a long guest name never pushes anything out. */
+.env-letter{
+  left:7%; right:7%; top:5%; height:90%; z-index:2;
+  display:flex; flex-direction:column; align-items:center;
+  padding:.75em .8em .65em;
+  background:#fff; border-radius:.22em;
+  box-shadow:0 .25em .9em rgba(58,39,64,0.14);
+  transition:transform 1s cubic-bezier(.22,.8,.3,1);
+}
+.env-letter::after{
+  content:''; position:absolute; inset:.32em;
+  border:1px solid rgba(198,161,91,0.5); border-radius:.12em;
+  pointer-events:none;
+}
+.letter-art{
+  flex:1 1 0; min-height:0; width:100%;
+  object-fit:contain;
+  /* The art sits on near-white; multiply melts that into the card. */
+  mix-blend-mode:multiply;
+}
+.letter-kicker{
+  margin-top:.45em;
+  font-family:'Cinzel', serif; font-weight:600;
+  font-size:.5em; letter-spacing:.3em; text-transform:uppercase;
+  color:var(--plum);
+}
+.letter-names{
+  font-family:'Beau Rivage', cursive;
+  font-size:1.55em; line-height:1.05; color:var(--plum-deep);
+}
+.letter-date{
+  margin-top:.1em;
+  font-family:'Cinzel', serif; font-size:.6em; letter-spacing:.22em; color:var(--ink);
+}
+.letter-rule{
+  width:2.6em; height:1px; margin:.4em 0 .3em;
+  background:linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+.letter-dear{
+  font-family:'Cormorant Garamond', serif; font-style:italic;
+  font-size:.72em; color:var(--ink); opacity:.75;
+}
+.letter-guest{
+  max-width:100%;
+  font-family:'Beau Rivage', cursive;
+  font-size:1.25em; line-height:1.15; color:var(--burgundy);
+  overflow-wrap:anywhere;
+}
+.letter-guest.long{ font-size:.98em; }
+
+/* Front pocket: three folds, each a slightly different paper tone so the
+   creases read without any drawn lines. */
+.env-front{
+  inset:0; z-index:3;
+  border-radius:0 0 .35em .35em;
+  clip-path:polygon(0 0, 50% 52%, 100% 0, 100% 100%, 0 100%);
+  background:linear-gradient(0deg, #EEE3D3 0%, #F7F0E5 100%);
+}
+.env-front::before,
+.env-front::after{ content:''; position:absolute; inset:0; }
+.env-front::before{
+  clip-path:polygon(0 0, 50% 52%, 0 100%);
+  background:linear-gradient(90deg, #F5EDE1 0%, #EADFCC 100%);
+}
+.env-front::after{
+  clip-path:polygon(100% 0, 50% 52%, 100% 100%);
+  background:linear-gradient(270deg, #F3EADC 0%, #E6D9C4 100%);
+}
+
+/* Top flap. One flat element swung through 180° with real perspective; its
+   face changes from paper to plum liner at the exact moment it's edge-on,
+   so the swap is never seen. It also drops behind the letter at that
+   instant, so the rising letter passes in front of the open flap. */
+.env-flap{
+  inset:0; z-index:5;
+  transform-origin:50% 0;
+  clip-path:polygon(0 0, 100% 0, 50% 58%);
+  background:linear-gradient(178deg, #FBF6EE 0%, #EFE5D5 100%);
+}
+.env-flap-shadow{
+  inset:0; z-index:4;
+  clip-path:polygon(0 0, 100% 0, 50% 61.5%);
+  background:rgba(58,39,64,0.10);
+  transition:opacity .25s ease;
+}
+.envelope.open .env-flap{ animation:flapOpen .75s cubic-bezier(.55,.05,.35,1) forwards; }
+.envelope.open .env-flap-shadow{ opacity:0; }
+@keyframes flapOpen{
+  0%{     transform:rotateX(0deg);
+          background:linear-gradient(178deg, #FBF6EE 0%, #EFE5D5 100%); z-index:5; }
+  49.9%{  transform:rotateX(89.9deg);
+          background:linear-gradient(178deg, #FBF6EE 0%, #EFE5D5 100%); z-index:5; }
+  50%{    transform:rotateX(90deg);
+          background:linear-gradient(0deg, #4b3353 0%, var(--plum-deep) 100%); z-index:1; }
+  100%{   transform:rotateX(180deg);
+          background:linear-gradient(0deg, #4b3353 0%, var(--plum-deep) 100%); z-index:1; }
+}
+
+/* Medal-ribbon tail under the seal, V-cut at the end. */
+.env-ribbon{
+  left:50%; top:58%; bottom:7%; width:2.9em; margin-left:-1.45em; z-index:6;
+  clip-path:polygon(0 0, 100% 0, 100% 100%, 50% 84%, 0 100%);
+  background:linear-gradient(90deg,
+    var(--burgundy) 0 20%, var(--gold) 20% 40%, var(--plum) 40% 60%,
+    var(--lavender) 60% 80%, var(--gold) 80% 100%);
+  transition:transform .55s ease, opacity .45s ease;
+}
+.envelope.open .env-ribbon{ transform:translateY(1.4em); opacity:0; }
+
+/* Gold wax seal stamped with the monogram. The irregular blob behind the
+   round stamp is what makes it read as wax rather than a button. */
+.env-seal{
+  left:50%; top:58%; z-index:7;
+  width:4.5em; height:4.5em; margin:-2.25em 0 0 -2.25em;
+  border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  background:radial-gradient(circle at 34% 30%, #F4E2AE 0%, #D9B76E 30%, #B98F45 64%, #8A6628 100%);
+  box-shadow:
+    0 .3em .7em rgba(74,52,20,0.38),
+    inset 0 -.18em .35em rgba(80,55,15,0.38),
+    inset 0 .14em .25em rgba(255,242,205,0.6);
+  animation:sealGlow 2.8s ease-in-out infinite;
+}
+.env-seal::before{
+  content:''; position:absolute; inset:-.32em; z-index:-1;
+  border-radius:46% 54% 50% 50% / 53% 47% 56% 44%;
+  background:radial-gradient(circle at 40% 35%, #C9A25A, #8E6A2C);
+}
+.env-seal::after{
+  content:''; position:absolute; inset:.42em; border-radius:50%;
+  border:1px solid rgba(110,79,28,0.38);
+  box-shadow:0 1px 0 rgba(255,240,200,0.35);
+}
+.seal-mark{
+  font-family:'Beau Rivage', cursive;
+  font-size:1.55em; line-height:1; color:#4E3510;
+  /* Light below, shade above: reads as pressed into the wax. */
+  text-shadow:0 1px 0 rgba(255,238,190,0.7), 0 -1px 0 rgba(60,38,8,0.25);
+}
+@keyframes sealGlow{
+  0%, 100%{ box-shadow:0 .3em .7em rgba(74,52,20,0.38), inset 0 -.18em .35em rgba(80,55,15,0.38), inset 0 .14em .25em rgba(255,242,205,0.6), 0 0 0 0 rgba(198,161,91,0.45); }
+  50%{      box-shadow:0 .3em .7em rgba(74,52,20,0.38), inset 0 -.18em .35em rgba(80,55,15,0.38), inset 0 .14em .25em rgba(255,242,205,0.6), 0 0 0 .55em rgba(198,161,91,0); }
+}
+.envelope.open .env-seal{ animation:sealOff .5s cubic-bezier(.4,0,.6,1) forwards; }
+@keyframes sealOff{
+  0%{   transform:scale(1) rotate(0); opacity:1; }
+  35%{  transform:scale(1.14) rotate(-8deg); opacity:1; }
+  100%{ transform:scale(.55) rotate(12deg) translateY(1.6em); opacity:0; }
+}
+
+/* Letter slides up out of the open envelope… */
+.envelope.rise .env-letter{ transform:translateY(-56%); }
+/* …then the envelope falls away and the letter comes forward. Fading the
+   envelope (rather than re-ordering layers) is what lets the lower half of
+   the letter appear without a visible jump. */
+.envelope.lift .env-back,
+.envelope.lift .env-front,
+.envelope.lift .env-flap{
+  opacity:0; translate:0 1.6em;
+  transition:opacity .55s ease, translate .7s ease;
+}
+.envelope.lift .env-letter{
+  transform:translateY(0) scale(1.22);
+  transition:transform 1.05s cubic-bezier(.22,.8,.3,1);
+  box-shadow:0 1.2em 2.6em rgba(58,39,64,0.2);
+}
 
 /* ---------- Countdown ---------- */
 .countdown{ background:var(--cream-2); }
@@ -690,6 +938,91 @@ body.veiled{ overflow:hidden; }
   color:var(--plum); opacity:0.75;
 }
 .countdown-note{ margin-top:26px; font-style:italic; font-size:1.05rem; opacity:0.8; }
+
+/* Month card */
+.cal-card{
+  max-width:340px; margin:34px auto 0;
+  padding:22px 20px 18px;
+  background:var(--white);
+  border:1px solid rgba(92,63,99,0.14); border-radius:3px;
+  box-shadow:0 14px 30px rgba(58,39,64,0.08);
+}
+.cal-head{ display:flex; flex-direction:column; align-items:center; gap:2px; margin-bottom:14px; }
+.cal-month{
+  font-family:'Beau Rivage', cursive; font-size:2.1rem; line-height:1; color:var(--plum-deep);
+}
+.cal-year{
+  font-family:'Cinzel', serif; font-size:0.62rem; letter-spacing:0.3em; color:var(--gold);
+}
+.cal-grid{
+  display:grid; grid-template-columns:repeat(7, 1fr);
+  row-gap:6px; justify-items:center; align-items:center;
+}
+.cal-grid span{
+  width:32px; height:32px;
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Cormorant Garamond', serif; font-size:1rem; color:var(--ink);
+}
+.cal-grid .cal-dow{
+  height:22px;
+  font-family:'Cinzel', serif; font-size:0.55rem; letter-spacing:0.08em;
+  text-transform:uppercase; color:var(--plum); opacity:0.7;
+}
+/* The day itself, ringed in gold that keeps gently pulsing outward. */
+.cal-grid .is-wedding{
+  position:relative;
+  background:var(--plum-deep); color:var(--cream);
+  border-radius:50%; font-weight:600;
+}
+.cal-grid .is-wedding::after{
+  content:''; position:absolute; inset:-5px;
+  border:1.5px solid var(--gold); border-radius:50%;
+  animation:dayRing 2.4s ease-out infinite;
+}
+@keyframes dayRing{
+  0%{ transform:scale(.88); opacity:1; }
+  100%{ transform:scale(1.35); opacity:0; }
+}
+.cal-caption{
+  margin-top:14px; font-style:italic; font-size:1.02rem; color:var(--plum);
+}
+
+/* The two ceremonies */
+.day-times{
+  display:flex; justify-content:center; gap:14px; flex-wrap:wrap;
+  margin-top:22px;
+}
+.day-time{
+  flex:1 1 140px; max-width:170px;
+  padding:14px 10px;
+  border-top:2px solid var(--gold);
+  background:rgba(255,255,255,0.55);
+}
+.dt-time{
+  display:block;
+  font-family:'Cinzel', serif; font-weight:600; font-size:1.15rem;
+  letter-spacing:0.06em; color:var(--plum-deep);
+}
+.dt-label{
+  display:block; margin-top:4px;
+  font-family:'Cinzel', serif; font-size:0.58rem;
+  letter-spacing:0.16em; text-transform:uppercase; color:var(--plum);
+}
+.cal-actions{
+  display:flex; justify-content:center; gap:12px; flex-wrap:wrap;
+  margin-top:24px;
+}
+/* Matching widths, so on a phone they stack as a tidy pair. */
+.cal-actions .calendar-btn{ margin-top:0; min-width:220px; text-align:center; }
+
+/* Times inside the Details "When" card */
+.when-times{ list-style:none; margin-top:10px; }
+.when-times li{ font-size:1.08rem; line-height:1.6; }
+.when-times span{
+  display:inline-block; min-width:5.2em;
+  font-family:'Cinzel', serif; font-size:0.8rem; letter-spacing:0.06em; color:var(--plum-deep);
+}
+
 .calendar-btn{
   display:inline-block; margin-top:22px; padding:13px 34px;
   background:transparent; color:var(--plum-deep);
@@ -778,6 +1111,6 @@ body.veiled{ overflow:hidden; }
   .reveal.js-reveal{ opacity:1 !important; transform:none !important; }
   .petal{ display:none; }
   .band-media{ inset:0; }
-  .intro-veil.armed{ display:none; }
+  .intro.armed{ display:none; }
   body.veiled{ overflow:auto; }
 }
