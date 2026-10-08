@@ -134,6 +134,18 @@ There's deliberately **no street address printed** on the site. Sources disagree
 
 ---
 
+## Link preview
+
+When the link is pasted into WhatsApp, Facebook, iMessage and similar apps, it shows `images/share-card.jpg` (1200 × 630) with the title and description from the `og:` tags at the top of [index.html](index.html). The preview is the same for every guest: those apps don't run the page's JavaScript, so a `?to=` name only appears once the link is opened.
+
+The card is built from [design/share-card.html](design/share-card.html). If a detail on it changes, edit that file and re-render it:
+
+```bash
+"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless=new --hide-scrollbars --force-device-scale-factor=1 --allow-file-access-from-files --window-size=1200,630 --virtual-time-budget=8000 --screenshot=card.png "file://$PWD/design/share-card.html"
+```
+
+Then convert it with `sips -s format jpeg -s formatOptions 86 card.png --out images/share-card-2.jpg` and point the four image tags in `index.html` at the **new filename**. Apps cache previews by image URL, so replacing the file under the same name can leave the old card showing for days. Keep the JPEG under about 300 KB, or WhatsApp may skip the large preview.
+
 ## Photos
 
 Live photos are in `images/`, named by scene (`couple-beach.jpg`, `couple-hills.jpg`, …). The untouched WhatsApp originals are kept in `images/originals/` in case you want to recrop anything.

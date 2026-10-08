@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<!--
+  Source for images/share-card.jpg — the preview image shown when the link is
+  pasted into WhatsApp, Facebook, iMessage and similar apps.
+
+  Not part of the site. If the names, date, time or venue change, edit this
+  file and re-render it at exactly 1200 × 630 (see README → "Link preview").
+-->
+<html><head><meta charset="UTF-8">
+<title>Share card</title>
+<link href="https://fonts.googleapis.com/css2?family=Beau+Rivage&family=Cinzel:wght@500;600&family=Cormorant+Garamond:ital,wght@0,500;1,400;1,500&display=block" rel="stylesheet">
+<style>
+  :root{
+    --cream:#FBF7F1; --cream-2:#F4EDE3; --plum:#5C3F63; --plum-deep:#3A2740;
+    --lavender:#B9A6D1; --gold:#C6A15B; --burgundy:#7A2E3A; --ink:#2B2430;
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  html, body{ width:1200px; height:630px; overflow:hidden; }
+  body{
+    position:relative;
+    background:
+      radial-gradient(circle at 8% 6%, rgba(185,166,209,0.45), transparent 42%),
+      radial-gradient(circle at 92% 96%, rgba(198,161,91,0.28), transparent 46%),
+      linear-gradient(160deg, var(--cream) 0%, var(--cream-2) 100%);
+    font-family:'Cormorant Garamond', serif; color:var(--ink);
+  }
+  .frame{ position:absolute; inset:22px; border:1.5px solid rgba(198,161,91,0.55); }
+  .frame::after{ content:''; position:absolute; inset:7px; border:1px solid rgba(198,161,91,0.28); }
+
+  .text{
+    position:absolute; left:92px; top:0; bottom:0; width:600px;
+    display:flex; flex-direction:column; justify-content:center;
+  }
+  .ribbon{ display:flex; gap:7px; margin-bottom:22px; }
+  .ribbon span{ width:42px; height:6px; border-radius:1px; }
+  .ribbon span:nth-child(1){ background:var(--burgundy); }
+  .ribbon span:nth-child(2){ background:var(--gold); }
+  .ribbon span:nth-child(3){ background:var(--plum); }
+  .ribbon span:nth-child(4){ background:var(--lavender); }
+  .ribbon span:nth-child(5){ background:var(--gold); }
+  .eyebrow{
+    font-family:'Cinzel', serif; font-weight:600;
+    font-size:19px; letter-spacing:0.3em; text-transform:uppercase; color:var(--plum);
+  }
+  .names{
+    margin-top:14px;
+    font-family:'Beau Rivage', cursive; font-weight:400;
+    font-size:122px; line-height:0.98; color:var(--plum-deep);
+  }
+  .names .amp{ color:var(--gold); font-size:0.8em; }
+  .names .second{ display:block; padding-left:64px; }
+  .sub{
+    margin-top:14px;
+    font-family:'Cinzel', serif; font-size:19px; letter-spacing:0.28em;
+    text-transform:uppercase; color:var(--plum);
+  }
+  .rule{ width:140px; height:1.5px; margin:26px 0 22px;
+    background:linear-gradient(90deg, var(--gold), transparent); }
+  .date{
+    font-family:'Cinzel', serif; font-weight:600; font-size:27px;
+    letter-spacing:0.1em; color:var(--plum-deep);
+  }
+  .time, .venue{ font-style:italic; font-size:29px; color:var(--plum); margin-top:6px; }
+  .venue{ color:var(--ink); opacity:0.82; }
+
+  /* Arched frame, matching the site's hero */
+  .arch{
+    position:absolute; right:92px; top:50%; transform:translateY(-50%);
+    width:372px; height:500px; padding:12px;
+    background:#fff;
+    border-radius:200px 200px 10px 10px;
+    box-shadow:0 26px 50px rgba(58,39,64,0.20);
+  }
+  .arch::after{
+    content:''; position:absolute; inset:5px;
+    border:1.5px solid rgba(198,161,91,0.6);
+    border-radius:196px 196px 7px 7px;
+  }
+  .arch img{
+    width:100%; height:100%;
+    object-fit:contain; object-position:center 78%;
+    border-radius:190px 190px 5px 5px;
+  }
+</style></head>
+<body>
+  <div class="frame"></div>
+  <div class="text">
+    <div class="ribbon"><span></span><span></span><span></span><span></span><span></span></div>
+    <div class="eyebrow">You are cordially invited</div>
+    <div class="names">Krishal <span class="amp">&amp;</span><span class="second">Jayakshi</span></div>
+    <div class="sub">are getting married</div>
+    <div class="rule"></div>
+    <div class="date">Thursday · 17 December 2026</div>
+    <div class="time">Poruwa Ceremony · 9:25 AM</div>
+    <div class="venue">Hotel Green Court, Homagama</div>
+  </div>
+  <div class="arch">
+    <img src="../images/couple-illustration.webp" alt="">
+  </div>
+</body></html>
