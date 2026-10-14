@@ -1,5 +1,5 @@
 /**
- * Krishal & Jayakshi — RSVP backend.
+ * Jayakshi & Krishal — RSVP backend.
  *
  * Runs inside a Google Sheet (Extensions → Apps Script) and does two jobs:
  *   doPost — the website sends an RSVP here, it gets appended as a new row.
@@ -21,10 +21,10 @@ const SECRET_KEY = 'KJ1712';
 // The tab inside the spreadsheet that rows are written to.
 const SHEET_NAME = 'RSVPs';
 
-// Phone is the LAST column, not next to Name, on purpose: rows already in the
-// sheet have five columns, and adding the new one at the end keeps every
-// existing row lined up under the right heading.
-const HEADERS = ['Timestamp', 'Name', 'Attending', 'Guests', 'Message', 'Phone'];
+// New questions are always added as the LAST column, never in the middle:
+// rows already in the sheet keep their positions, so every existing reply
+// stays lined up under the right heading.
+const HEADERS = ['Timestamp', 'Name', 'Attending', 'Guests', 'Message', 'Phone', 'Liquor'];
 
 
 /** Receives an RSVP from the website and appends it as a row. */
@@ -34,8 +34,12 @@ function doPost(e) {
     const sheet = getSheet_();
 
     const attending = data.attending === 'yes' ? 'Yes' : 'No';
-    // Anyone who declines is recorded with 0 guests.
+    // Anyone who declines is recorded with 0 guests and no liquor answer.
     const guests = data.attending === 'yes' ? Number(data.guests) || 1 : 0;
+    const liquor = data.attending !== 'yes' ? ''
+      : data.liquor === 'yes' ? 'Yes'
+      : data.liquor === 'no' ? 'No'
+      : '';
 
     sheet.appendRow([
       data.timestamp ? new Date(data.timestamp) : new Date(),
@@ -43,7 +47,8 @@ function doPost(e) {
       attending,
       guests,
       safeText_(data.message, 1000),
-      phoneText_(data.phone)
+      phoneText_(data.phone),
+      liquor
     ]);
 
     return json_({ ok: true });
@@ -78,7 +83,8 @@ function doGet(e) {
           attending: String(row[2]).toLowerCase() === 'yes' ? 'yes' : 'no',
           guests: Number(row[3]) || 0,
           message: String(row[4] || ''),
-          phone: String(row[5] || '')
+          phone: String(row[5] || ''),
+          liquor: String(row[6] || '').toLowerCase()
         };
       });
 
@@ -101,7 +107,7 @@ function getSheet_() {
     sheet.appendRow(HEADERS);
     sheet.setFrozenRows(1);
   } else {
-    // An older sheet may predate the Phone column — fill in any missing
+    // An older sheet may predate the newer columns — fill in any missing
     // headings without touching the rows beneath.
     const current = sheet.getRange(1, 1, 1, HEADERS.length).getValues()[0];
     HEADERS.forEach(function (h, i) {

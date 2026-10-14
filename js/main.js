@@ -134,7 +134,7 @@ if(calendarBtn){
   const fmt = (d) => d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
   const params = new URLSearchParams({
     action: 'TEMPLATE',
-    text: 'Wedding of Krishal & Jayakshi',
+    text: 'Wedding of Jayakshi & Krishal',
     dates: `${fmt(PORUWA_START)}/${fmt(CALENDAR_END)}`,
     details: 'Poruwa Ceremony · 9:25 AM (Sri Lanka time)\n\n' + location.origin + location.pathname,
     location: 'Hotel Green Court, Homagama, Sri Lanka'
@@ -434,17 +434,32 @@ document.addEventListener('keydown', (e) => {
 const yesBtn = document.querySelector('.yes-btn');
 const noBtn = document.querySelector('.no-btn');
 const guestsField = document.getElementById('guestsField');
+const liquorField = document.getElementById('liquorField');
 let attendingVal = null;
 yesBtn.addEventListener('click', () => {
   attendingVal = 'yes';
   yesBtn.classList.add('active'); noBtn.classList.remove('active', 'no');
   guestsField.classList.add('show');
+  liquorField.classList.add('show');
 });
 noBtn.addEventListener('click', () => {
   attendingVal = 'no';
   noBtn.classList.add('active', 'no'); yesBtn.classList.remove('active');
   guestsField.classList.remove('show');
+  liquorField.classList.remove('show');
 });
+
+// Liquor: a single Yes / No for the whole party, asked only of those coming.
+const liquorBtns = document.querySelectorAll('.liquor-btn');
+let liquorVal = null;
+liquorBtns.forEach(btn => btn.addEventListener('click', () => {
+  liquorVal = btn.dataset.val;
+  liquorBtns.forEach(b => {
+    const on = b === btn;
+    b.classList.toggle('active', on);
+    b.setAttribute('aria-pressed', on ? 'true' : 'false');
+  });
+}));
 
 // ---------- RSVP submit → Google Sheet ----------
 // This is a one-way street: the page can add a row to the sheet, and that is
@@ -471,6 +486,11 @@ rsvpForm.addEventListener('submit', async (e) => {
     return;
   }
   if(!attendingVal){ formMsg.textContent = 'Please let us know if you can make it.'; formMsg.classList.add('error'); return; }
+  if(attendingVal === 'yes' && !liquorVal){
+    formMsg.textContent = 'Please let us know whether you will be consuming liquor.';
+    formMsg.classList.add('error');
+    return;
+  }
 
   // Guest count only applies to those attending; decliners are recorded as 0.
   let guestCount = 0;
@@ -482,6 +502,7 @@ rsvpForm.addEventListener('submit', async (e) => {
 
   const record = {
     name, phone, attending: attendingVal, guests: guestCount, message,
+    liquor: attendingVal === 'yes' ? liquorVal : '',
     timestamp: new Date().toISOString()
   };
 
@@ -596,10 +617,10 @@ document.querySelectorAll('.dash-filter button').forEach(btn => {
 document.getElementById('refreshBtn').addEventListener('click', async () => {
   if(!dashKey) return;
   const body = document.getElementById('dashBody');
-  body.innerHTML = '<tr><td colspan="6" class="loading-dots">Loading…</td></tr>';
+  body.innerHTML = '<tr><td colspan="7" class="loading-dots">Loading…</td></tr>';
   const result = await fetchRecords(dashKey);
   if(result.ok){ allRecords = result.records; renderDashboard(); }
-  else body.innerHTML = `<tr><td colspan="6" class="loading-dots">${escapeHtml(result.message)}</td></tr>`;
+  else body.innerHTML = `<tr><td colspan="7" class="loading-dots">${escapeHtml(result.message)}</td></tr>`;
 });
 
 function visibleRecords(){
@@ -619,6 +640,9 @@ function renderDashboard(){
   document.getElementById('statNo').textContent = no.length;
   document.getElementById('statGuests').textContent =
     yes.reduce((s,r) => s + (Number(r.guests)||0), 0);
+  // Each party answers once, so this counts everyone in parties that said Yes.
+  document.getElementById('statLiquor').textContent =
+    yes.filter(r => r.liquor === 'yes').reduce((s,r) => s + (Number(r.guests)||0), 0);
 
   const rows = visibleRecords();
   if(rows.length === 0){
@@ -640,10 +664,16 @@ function renderDashboard(){
       <td>${phoneCell(r.phone)}</td>
       <td><span class="pill ${yesRow ? 'yes' : 'no'}">${yesRow ? 'Attending' : 'Not Attending'}</span></td>
       <td>${yesRow ? escapeHtml(String(r.guests)) : '—'}</td>
+      <td>${yesRow ? liquorLabel(r.liquor) : '—'}</td>
       <td>${escapeHtml(r.message || '—')}</td>
       <td>${dateStr}</td>
     </tr>`;
   }).join('');
+}
+
+// Replies saved before the liquor question existed have no answer: show "—".
+function liquorLabel(value){
+  return value === 'yes' ? 'Yes' : value === 'no' ? 'No' : '—';
 }
 
 function escapeHtml(str){
@@ -655,12 +685,13 @@ function escapeHtml(str){
 document.getElementById('csvBtn').addEventListener('click', () => {
   const rows = visibleRecords();
   if(rows.length === 0) return;
-  const header = ['Name','Mobile','Attending','Guests','Message','Submitted'];
+  const header = ['Name','Mobile','Attending','Guests','Liquor','Message','Submitted'];
   const body = rows.map(r => [
     csvEscape(r.name),
     csvEscape(r.phone || ''),
     r.attending === 'yes' ? 'Yes' : 'No',
     r.attending === 'yes' ? r.guests : 0,
+    r.attending === 'yes' && r.liquor ? liquorLabel(r.liquor) : '',
     csvEscape(r.message || ''),
     r.timestamp
   ]);
@@ -669,7 +700,7 @@ document.getElementById('csvBtn').addEventListener('click', () => {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = 'krishal-jayakshi-rsvp.csv';
+  a.download = 'jayakshi-krishal-rsvp.csv';
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);

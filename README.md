@@ -1,4 +1,4 @@
-# Krishal & Jayakshi — Wedding Invitation
+# Jayakshi & Krishal — Wedding Invitation
 
 A static site: `index.html` + `css/style.css` + `js/main.js`. No build step — open `index.html` directly, or host it anywhere (GitHub Pages, Netlify, Vercel, Cloudflare Pages).
 
@@ -16,7 +16,7 @@ RSVPs are saved to a Google Sheet, and that needs about five minutes of setup. *
 
 ### 1. Create the sheet
 
-1. Go to [sheets.new](https://sheets.new) and name the spreadsheet something like *Krishal & Jayakshi RSVPs*.
+1. Go to [sheets.new](https://sheets.new) and name the spreadsheet something like *Jayakshi & Krishal RSVPs*.
 
 Don't add headers or columns — the script creates them on the first RSVP.
 
@@ -98,9 +98,15 @@ const CALENDAR_END = new Date('2026-12-17T15:00:00+05:30'); // assumed — only 
 
 ## RSVP form
 
-Guests give their name, **mobile number** (required), whether they're attending, how many guests, and an optional message. Any mobile format is accepted — `077 123 4567`, `+94 77 123 4567`, or an overseas number — as long as it has 9–15 digits.
+Guests give their name, **mobile number** (required), and whether they're attending. Guests who are coming also choose how many are in their party and answer **"Will you be consuming liquor?"** (Yes / No, required, one answer for the whole party). Everyone can add an optional message. Any mobile format is accepted, such as `077 123 4567`, `+94 77 123 4567` or an overseas number, as long as it has 9–15 digits.
 
-In the Google Sheet each reply is one row: `Timestamp | Name | Attending | Guests | Message | Phone`. Phone is the last column so that rows saved before it existed stay lined up. Numbers are stored as text, so a leading `0` is kept. In the Dashboard, the number is a tap-to-call link.
+In the Google Sheet each reply is one row:
+
+`Timestamp | Name | Attending | Guests | Message | Phone | Liquor`
+
+New questions are always added as the last column, so replies saved before a column existed stay lined up; they simply have that cell blank. Phone numbers are stored as text, so a leading `0` is kept. Liquor is blank for anyone who declined.
+
+In the Dashboard, the number is a tap-to-call link, and **Liquor · Guests** totals everyone in parties that answered Yes, a figure for planning the bar. The CSV export includes both columns.
 
 ## Countdown, music and the opening envelope
 
@@ -136,7 +142,7 @@ There's deliberately **no street address printed** on the site. Sources disagree
 
 ## Link preview
 
-When the link is pasted into WhatsApp, Facebook, iMessage and similar apps, it shows `images/share-card.jpg` (1200 × 630) with the title and description from the `og:` tags at the top of [index.html](index.html). The preview is the same for every guest: those apps don't run the page's JavaScript, so a `?to=` name only appears once the link is opened.
+When the link is pasted into WhatsApp, Facebook, iMessage and similar apps, it shows `images/share-card-2.jpg` (1200 × 630) with the title and description from the `og:` tags at the top of [index.html](index.html). The preview is the same for every guest: those apps don't run the page's JavaScript, so a `?to=` name only appears once the link is opened.
 
 The card is built from [design/share-card.html](design/share-card.html). If a detail on it changes, edit that file and re-render it:
 
@@ -144,7 +150,7 @@ The card is built from [design/share-card.html](design/share-card.html). If a de
 "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless=new --hide-scrollbars --force-device-scale-factor=1 --allow-file-access-from-files --window-size=1200,630 --virtual-time-budget=8000 --screenshot=card.png "file://$PWD/design/share-card.html"
 ```
 
-Then convert it with `sips -s format jpeg -s formatOptions 86 card.png --out images/share-card-2.jpg` and point the four image tags in `index.html` at the **new filename**. Apps cache previews by image URL, so replacing the file under the same name can leave the old card showing for days. Keep the JPEG under about 300 KB, or WhatsApp may skip the large preview.
+Then convert it with `sips -s format jpeg -s formatOptions 86 card.png --out images/share-card-3.jpg` and point the four image tags in `index.html` at the **new filename**. Apps cache previews by image URL, so replacing the file under the same name can leave the old card showing for days. Keep the JPEG under about 300 KB, or WhatsApp may skip the large preview.
 
 ## Photos
 
