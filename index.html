@@ -35,7 +35,7 @@
 <!-- ?v= must change on every deploy. GitHub Pages lets browsers reuse files
      for 10 minutes, so without a new version a returning visitor can get the
      new page with the OLD stylesheet — and a broken layout. -->
-<link rel="stylesheet" href="css/style.css?v=2026101401">
+<link rel="stylesheet" href="css/style.css?v=2026111101">
 </head>
 <body>
 
@@ -126,8 +126,16 @@
   <h1 class="hero-step" style="--i:1">Jayakshi <span class="amp">&amp;</span> Krishal</h1>
   <div class="hero-sub hero-step" style="--i:2">are getting married</div>
   <div class="couple-img-wrap" id="heroImg">
-    <div class="couple-photo illustrated hero-step" style="--i:3">
-      <img src="images/couple-illustration.webp" alt="Illustration of Jayakshi in her bridal sari, holding a bouquet, and Krishal in service dress">
+    <!-- Hero video. JS starts it from the beginning as the envelope opens, and
+         pauses it when scrolled out of view. The poster shows until it plays —
+         and stays for anyone who asks for reduced motion, or whose phone blocks
+         autoplay (e.g. iPhone Low Power Mode). Muted: the music plays instead. -->
+    <div class="couple-photo hero-step" style="--i:3">
+      <span class="video-clip">
+        <video id="heroVideo" src="video/hero.mp4" poster="video/hero-poster.jpg"
+               muted loop playsinline preload="auto" disablepictureinpicture disableremoteplayback
+               aria-label="Animation of Jayakshi and Krishal walking beneath an arch of raised swords as petals fall"></video>
+      </span>
     </div>
   </div>
   <div class="hero-date hero-step" style="--i:4">17th December 2026</div>
@@ -433,6 +441,6 @@
   </div>
 </div>
 
-<script src="js/main.js?v=2026101401"></script>
+<script src="js/main.js?v=2026111101"></script>
 </body>
 </html>

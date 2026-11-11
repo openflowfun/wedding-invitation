@@ -336,7 +336,32 @@ function finishIntro(){
   setTimeout(() => { intro.hidden = true; }, 900);
 }
 
+// ---------- Hero video ----------
+// Started from the top as the envelope opens, so guests see the walk from the
+// beginning rather than joining it halfway. Paused while off screen to spare
+// phone batteries. If a phone refuses to autoplay, the poster simply stays.
+const heroVideo = document.getElementById('heroVideo');
+let heroVideoWanted = false;
+function playHeroVideo(fromStart){
+  if(!heroVideo || prefersReduced) return;
+  heroVideoWanted = true;
+  heroVideo.muted = true;            // the property, not just the attribute, is what autoplay checks
+  if(fromStart) heroVideo.currentTime = 0;
+  const p = heroVideo.play();
+  if(p) p.catch(() => {});
+}
+if(heroVideo && 'IntersectionObserver' in window){
+  new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if(!heroVideoWanted) return;
+      if(e.isIntersecting) heroVideo.play().catch(() => {});
+      else heroVideo.pause();
+    });
+  }, { threshold: 0.1 }).observe(heroVideo);
+}
+
 function revealHero(){
+  playHeroVideo(true);
   hero.classList.add('hero-revealing');
   requestAnimationFrame(() => hero.classList.remove('hero-pending'));
   setTimeout(() => hero.classList.remove('hero-revealing'), 2800);
@@ -354,6 +379,9 @@ if(intro && envelope && !prefersReduced){
     if(introStage === 'closed') openEnvelope();
     else if(envelope.classList.contains('lift')) finishIntro();
   });
+} else {
+  // No envelope shown — start straight away (does nothing under reduced motion).
+  playHeroVideo(true);
 }
 
 // ---------- Guest-count stepper ----------

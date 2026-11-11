@@ -200,12 +200,18 @@ img{display:block; max-width:100%;}
   width:100%; aspect-ratio:3/4; object-fit:cover; object-position:center 22%;
   border-radius:190px 190px 4px 4px;
 }
-/* The illustration is shown whole rather than cropped: cover would clip his
-   cap at the top of the arch and her bouquet hand at the side. Its near-white
-   ground matches the white frame, so the spare space reads as the arch. */
-.couple-photo.illustrated img{
-  object-fit:contain; object-position:center 72%;
-  background:#fff;
+/* Hero video in the arch. The clip is a separate wrapper because iPhones
+   don't reliably round the corners of a <video> on its own. The source is a
+   tall 9:16 clip; cropping it to the arch's 3:4 trims sky and carpet, and the
+   45% anchor keeps the raised swords and the couple's feet both in frame. */
+.video-clip{
+  display:block; overflow:hidden; isolation:isolate;
+  border-radius:190px 190px 4px 4px;
+  background:#E9E2D6;
+}
+.video-clip video{
+  display:block; width:100%; aspect-ratio:3/4;
+  object-fit:cover; object-position:center 45%;
 }
 
 /* Staggered entrance after the envelope opens. .hero-pending is only ever

@@ -156,7 +156,12 @@ Then convert it with `sips -s format jpeg -s formatOptions 86 card.png --out ima
 
 Live photos are in `images/`, named by scene (`couple-beach.jpg`, `couple-hills.jpg`, …). The untouched WhatsApp originals are kept in `images/originals/` in case you want to recrop anything.
 
-- **Hero and letter:** `images/couple-illustration.webp`, shown whole (not cropped) in the arched frame and on the letter inside the envelope.
+- **Hero video:** `video/hero.mp4` (720×1280 H.264, muted, loops) in the arched frame, with `video/hero-poster.jpg` shown until it plays. It starts from the beginning as the envelope opens and pauses when scrolled out of view. To replace it, convert the new clip first. Phone videos are usually HEVC, which many browsers can't play, and far too large:
+  ```bash
+  ffmpeg -i NEW.MOV -an -vf "scale=720:1280,fps=30,format=yuv420p" -c:v libx264 -preset slow -crf 24 -movflags +faststart video/hero.mp4
+  ffmpeg -ss 0.3 -i video/hero.mp4 -frames:v 1 -q:v 3 video/hero-poster.jpg
+  ```
+- **Letter illustration:** `images/couple-illustration.webp`, on the letter inside the envelope (and the link preview card).
 - **Cinematic band:** `images/couple-mountains.jpg`, the full-width photo with the quote over it.
 - **Gallery mosaic:** eight tiles in `<section class="gallery">`, including the service-dress photo `couple-uniform.jpg`.
 
