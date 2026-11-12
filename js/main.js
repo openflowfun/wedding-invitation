@@ -515,7 +515,7 @@ rsvpForm.addEventListener('submit', async (e) => {
   }
   if(!attendingVal){ formMsg.textContent = 'Please let us know if you can make it.'; formMsg.classList.add('error'); return; }
   if(attendingVal === 'yes' && !liquorVal){
-    formMsg.textContent = 'Please let us know whether you will be consuming liquor.';
+    formMsg.textContent = 'Please let us know whether you will be having alcohol.';
     formMsg.classList.add('error');
     return;
   }

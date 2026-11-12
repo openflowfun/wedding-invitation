@@ -35,7 +35,7 @@
 <!-- ?v= must change on every deploy. GitHub Pages lets browsers reuse files
      for 10 minutes, so without a new version a returning visitor can get the
      new page with the OLD stylesheet — and a broken layout. -->
-<link rel="stylesheet" href="css/style.css?v=2026111101">
+<link rel="stylesheet" href="css/style.css?v=2026111201">
 </head>
 <body>
 
@@ -354,10 +354,10 @@
 
       <!-- Only asked of guests who are coming; shown with the guest count. -->
       <div class="field guests-field" id="liquorField">
-        <label id="liquorLabel">Will you be consuming liquor?</label>
-        <div class="toggle-group" role="group" aria-labelledby="liquorLabel">
-          <button type="button" class="toggle-btn liquor-btn" data-val="yes" aria-pressed="false">Yes</button>
-          <button type="button" class="toggle-btn liquor-btn" data-val="no" aria-pressed="false">No</button>
+        <label id="liquorLabel">Will you be having alcohol?</label>
+        <div class="toggle-group choice-group" role="group" aria-labelledby="liquorLabel">
+          <button type="button" class="choice-btn liquor-btn" data-val="yes" aria-pressed="false"><span class="choice-emoji" aria-hidden="true">🥃</span> Yes</button>
+          <button type="button" class="choice-btn liquor-btn" data-val="no" aria-pressed="false"><span class="choice-emoji" aria-hidden="true">🥤</span> No</button>
         </div>
         <p class="field-hint">This helps us plan. Please answer for your whole party.</p>
       </div>
@@ -441,6 +441,6 @@
   </div>
 </div>
 
-<script src="js/main.js?v=2026111101"></script>
+<script src="js/main.js?v=2026111201"></script>
 </body>
 </html>
