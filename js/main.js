@@ -417,36 +417,61 @@ hamburgerBtn.addEventListener('click', () => toggleMenu(!menuPanel.classList.con
 scrim.addEventListener('click', () => toggleMenu(false));
 document.querySelectorAll('[data-close]').forEach(a => a.addEventListener('click', () => toggleMenu(false)));
 
-// ---------- Gallery lightbox ----------
+// ---------- Lightbox (gallery + pre-shoot) ----------
+// Each set opens in the same viewer; arrows only step within the set that was
+// tapped, so the pre-shoot and the gallery don't run into each other.
 const galleryImgs = Array.from(document.querySelectorAll('.gallery-item img'));
+const preshootImgs = Array.from(document.querySelectorAll('.preshoot-card img'));
 const lightbox = document.getElementById('lightbox');
 const lightboxImg = document.getElementById('lightboxImg');
 const lightboxCaption = document.getElementById('lightboxCaption');
 const lightboxCount = document.getElementById('lightboxCount');
 let lightboxIndex = 0;
+let lightboxSet = galleryImgs;
 
-function openLightbox(i){
+function openLightbox(i, set = galleryImgs){
+  lightboxSet = set;
   lightboxIndex = i;
   showLightboxImage();
   lightbox.classList.add('open');
   requestAnimationFrame(() => lightbox.classList.add('show'));
 }
 function showLightboxImage(){
-  const img = galleryImgs[lightboxIndex];
+  const img = lightboxSet[lightboxIndex];
   lightboxImg.src = img.src;
   lightboxImg.alt = img.alt;
-  lightboxCaption.textContent = img.alt || '';
-  lightboxCount.textContent = `${lightboxIndex + 1} / ${galleryImgs.length}`;
+  lightboxCaption.textContent = img.dataset.caption || img.alt || '';
+  lightboxCount.textContent = `${lightboxIndex + 1} / ${lightboxSet.length}`;
 }
 function closeLightbox(){
   lightbox.classList.remove('show');
   setTimeout(() => lightbox.classList.remove('open'), 250);
 }
 function stepLightbox(dir){
-  lightboxIndex = (lightboxIndex + dir + galleryImgs.length) % galleryImgs.length;
+  lightboxIndex = (lightboxIndex + dir + lightboxSet.length) % lightboxSet.length;
   showLightboxImage();
 }
-galleryImgs.forEach((img, i) => img.closest('.gallery-item').addEventListener('click', () => openLightbox(i)));
+galleryImgs.forEach((img, i) => img.closest('.gallery-item').addEventListener('click', () => openLightbox(i, galleryImgs)));
+preshootImgs.forEach((img, i) => img.closest('.preshoot-card').addEventListener('click', () => openLightbox(i, preshootImgs)));
+
+// Phone swipe row: light up the dot for whichever card is nearest the centre.
+const preshootTrack = document.getElementById('preshootTrack');
+const preshootDots = document.querySelectorAll('#preshootDots span');
+if(preshootTrack && preshootDots.length){
+  // Only three cards, so this is cheap enough to run on every scroll event.
+  const cards = preshootTrack.querySelectorAll('.preshoot-card');
+  const updateDots = () => {
+    const mid = preshootTrack.scrollLeft + preshootTrack.clientWidth / 2;
+    let best = 0, bestDist = Infinity;
+    cards.forEach((card, i) => {
+      const centre = card.offsetLeft - preshootTrack.offsetLeft + card.offsetWidth / 2;
+      const d = Math.abs(centre - mid);
+      if(d < bestDist){ bestDist = d; best = i; }
+    });
+    preshootDots.forEach((dot, i) => dot.classList.toggle('on', i === best));
+  };
+  preshootTrack.addEventListener('scroll', updateDots, { passive:true });
+}
 document.getElementById('lightboxClose').addEventListener('click', closeLightbox);
 lightbox.addEventListener('click', (e) => { if(e.target === lightbox) closeLightbox(); });
 document.getElementById('lightboxPrev').addEventListener('click', () => stepLightbox(-1));

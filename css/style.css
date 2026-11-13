@@ -410,6 +410,55 @@ section{ padding:90px 24px; position:relative; }
   margin-top:16px;
 }
 
+/* ---------- Pre-shoot ----------
+   Finished collages shown whole at their own 2:3 shape. Three across on wide
+   screens; on phones a horizontal swipe row where each card snaps to centre
+   and the next one peeks in from the side, so it's obvious there's more. */
+.preshoot{ background:var(--cream-2); }
+.preshoot-track{
+  display:grid; grid-template-columns:repeat(3, 1fr); gap:26px;
+  margin-top:42px;
+}
+.preshoot-card{
+  margin:0; cursor:zoom-in;
+  padding:9px 9px 0;
+  background:var(--white);
+  box-shadow:0 18px 38px rgba(58,39,64,0.14);
+  transition:transform .35s ease, box-shadow .35s ease;
+}
+.preshoot-card:hover{ transform:translateY(-6px); box-shadow:0 26px 48px rgba(58,39,64,0.2); }
+.preshoot-card img{
+  display:block; width:100%; height:auto; aspect-ratio:1001/1500;
+  background:var(--lavender-soft);
+}
+.preshoot-card figcaption{
+  padding:13px 6px 15px;
+  font-family:'Cinzel', serif; font-size:0.68rem; letter-spacing:0.2em;
+  text-transform:uppercase; color:var(--plum); text-align:center;
+}
+.preshoot-dots{ display:none; }
+
+@media (max-width:759px){
+  /* Full-bleed swipe row: the track breaks out of the section's side padding
+     so cards can slide in from the screen edge. */
+  .preshoot-track{
+    display:flex; gap:16px;
+    margin:36px -24px 0; padding:4px 24px 24px;
+    overflow-x:auto; overscroll-behavior-x:contain;
+    scroll-snap-type:x mandatory; scroll-padding:0 24px;
+    -webkit-overflow-scrolling:touch; scrollbar-width:none;
+  }
+  .preshoot-track::-webkit-scrollbar{ display:none; }
+  .preshoot-card{ flex:0 0 78%; scroll-snap-align:center; }
+  .preshoot-card:hover{ transform:none; }
+  .preshoot-dots{ display:flex; justify-content:center; gap:8px; margin-top:4px; }
+  .preshoot-dots span{
+    width:7px; height:7px; border-radius:50%;
+    background:rgba(92,63,99,0.25); transition:background .25s ease, transform .25s ease;
+  }
+  .preshoot-dots span.on{ background:var(--plum-deep); transform:scale(1.25); }
+}
+
 /* ---------- Gallery (editorial mosaic) ---------- */
 .gallery{ background:var(--lavender-soft); }
 .gallery-grid{

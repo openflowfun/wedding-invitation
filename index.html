@@ -35,7 +35,7 @@
 <!-- ?v= must change on every deploy. GitHub Pages lets browsers reuse files
      for 10 minutes, so without a new version a returning visitor can get the
      new page with the OLD stylesheet — and a broken layout. -->
-<link rel="stylesheet" href="css/style.css?v=2026111201">
+<link rel="stylesheet" href="css/style.css?v=2026111301">
 </head>
 <body>
 
@@ -112,6 +112,7 @@
   <a href="#countdown" data-close>Countdown</a>
   <a href="#details" data-close>Details</a>
   <a href="#location" data-close>Venue</a>
+  <a href="#preshoot" data-close>Pre-Shoot</a>
   <a href="#gallery" data-close>Gallery</a>
   <a href="#rsvp" data-close>RSVP</a>
   <a id="dashboardLink">Dashboard</a>
@@ -261,6 +262,39 @@
   <div class="band-inner">
     <div class="band-quote script reveal">Every love story is beautiful,<br>but ours is our favourite.</div>
     <div class="band-sub reveal reveal-delay-1">Jayakshi &amp; Krishal</div>
+  </div>
+</section>
+
+<section class="preshoot" id="preshoot">
+  <div class="section-inner wide">
+    <div class="eyebrow reveal">Before the big day</div>
+    <div class="section-title reveal">The Pre-Shoot</div>
+    <div class="ribbon-divider reveal"><span></span><span></span><span></span><span></span><span></span></div>
+
+    <!--
+      Each image is a finished collage, so it is always shown WHOLE (never
+      cropped). Desktop: three side by side. Phones: a swipeable row, one at a
+      time with the next peeking in. Tap any to open it full-screen.
+      data-caption is the short title shown under it and in the full-screen view.
+    -->
+    <div class="preshoot-track reveal reveal-delay-1" id="preshootTrack">
+      <figure class="preshoot-card">
+        <img src="images/preshoot-1.jpg" width="1001" height="1500" loading="lazy" data-caption="Golden Hour"
+             alt="Jayakshi in a white dress and Krishal with a guitar beside a cream vintage Beetle by a lake">
+        <figcaption>Golden Hour</figcaption>
+      </figure>
+      <figure class="preshoot-card">
+        <img src="images/preshoot-2.jpg" width="1001" height="1500" loading="lazy" data-caption="In the Hills"
+             alt="Krishal in camouflage uniform and Jayakshi in a brown dress walking across green hills">
+        <figcaption>In the Hills</figcaption>
+      </figure>
+      <figure class="preshoot-card">
+        <img src="images/preshoot-3.jpg" width="1001" height="1500" loading="lazy" data-caption="In Uniform"
+             alt="Jayakshi and Krishal in service uniform at a monument, and beside a white Land Rover">
+        <figcaption>In Uniform</figcaption>
+      </figure>
+    </div>
+    <div class="preshoot-dots" id="preshootDots" aria-hidden="true"><span class="on"></span><span></span><span></span></div>
   </div>
 </section>
 
@@ -441,6 +475,6 @@
   </div>
 </div>
 
-<script src="js/main.js?v=2026111201"></script>
+<script src="js/main.js?v=2026111301"></script>
 </body>
 </html>

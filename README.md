@@ -163,6 +163,7 @@ Live photos are in `images/`, named by scene (`couple-beach.jpg`, `couple-hills.
   ```
 - **Letter illustration:** `images/couple-illustration.webp`, on the letter inside the envelope (and the link preview card).
 - **Cinematic band:** `images/couple-mountains.jpg`, the full-width photo with the quote over it.
+- **Pre-shoot:** `images/preshoot-1.jpg` to `preshoot-3.jpg`, finished collages shown whole (never cropped) in the *Pre-Shoot* section: three across on desktop, a swipeable row on phones, and tap to view full-screen. Their captions (*Golden Hour*, *In the Hills*, *In Uniform*) are set in each image's `data-caption` and `<figcaption>`. Full-size originals are kept in `images/originals/` but not published.
 - **Gallery mosaic:** eight tiles in `<section class="gallery">`, including the service-dress photo `couple-uniform.jpg`.
 
 ### Changing the gallery
